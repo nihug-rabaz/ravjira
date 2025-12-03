@@ -10,6 +10,7 @@ import { SearchBar } from "@/components/search-bar"
 import { NotificationsBell } from "@/components/notifications-bell"
 import { KeyboardShortcutsProvider } from "@/components/keyboard-shortcuts-provider"
 import { redirect } from "next/navigation"
+import { Button } from "@/components/ui/button"
 
 export const dynamic = 'force-dynamic'
 
