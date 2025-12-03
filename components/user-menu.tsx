@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogOut, User } from "lucide-react"
+import { LogOut, User, Github, ExternalLink } from "lucide-react"
 
 interface UserMenuProps {
   user: {
@@ -49,9 +49,20 @@ export function UserMenu({ user }: UserMenuProps) {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem disabled>
+        <DropdownMenuItem onClick={() => window.open("https://github.com", "_blank")}>
           <User className="mr-2 h-4 w-4" />
           Profile
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => window.open("https://github.com", "_blank")}>
+          <Github className="mr-2 h-4 w-4" />
+          GitHub
+          <ExternalLink className="ml-auto h-3 w-3" />
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => window.open("https://v0.dev", "_blank")}>
+          <ExternalLink className="mr-2 h-4 w-4" />
+          Vercel V0 Base 44
+          <ExternalLink className="ml-auto h-3 w-3" />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>

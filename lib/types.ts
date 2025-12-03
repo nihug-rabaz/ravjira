@@ -28,7 +28,31 @@ export interface Issue {
 export interface Comment {
   id: string
   content: string
-  author: User
+  user: User
+  issueId: string
+  userId: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type ProjectEnvironment = "civilian" | "military"
+
+export interface GitHubRepo {
+  id: string
+  projectId: string
+  githubRepoUrl: string
+  githubOwner: string
+  githubRepo: string
+  createdAt: string
+}
+
+export interface VercelProject {
+  id: string
+  projectId: string
+  vercelProjectId: string
+  vercelProjectName: string
+  vercelTeamId?: string
+  vercelUrl?: string
   createdAt: string
 }
 
@@ -38,6 +62,95 @@ export interface Project {
   key: string
   description: string
   avatar: string
+  environment?: ProjectEnvironment
+  githubRepos?: GitHubRepo[]
+  vercelProjects?: VercelProject[]
   createdAt: string
   members: User[]
+}
+
+export interface Label {
+  id: string
+  name: string
+  color: string
+  projectId?: string
+  createdAt: string
+}
+
+export interface IssueHistory {
+  id: string
+  issueId: string
+  userId: string
+  user?: User
+  field: string
+  oldValue?: string
+  newValue?: string
+  createdAt: string
+}
+
+export interface Attachment {
+  id: string
+  issueId: string
+  userId: string
+  user?: User
+  filename: string
+  filePath: string
+  fileSize: number
+  mimeType?: string
+  createdAt: string
+}
+
+export interface Subtask {
+  id: string
+  parentIssueId: string
+  title: string
+  status: "todo" | "in-progress" | "done"
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TimeLog {
+  id: string
+  issueId: string
+  userId: string
+  user?: User
+  timeSpent: number
+  description?: string
+  loggedAt: string
+  createdAt: string
+}
+
+export interface IssueEstimate {
+  issueId: string
+  originalEstimate?: number
+  remainingEstimate?: number
+  timeSpent: number
+  updatedAt: string
+}
+
+export interface Notification {
+  id: string
+  userId: string
+  type: string
+  title: string
+  message?: string
+  link?: string
+  read: boolean
+  createdAt: string
+}
+
+export interface Request {
+  id: string
+  requesterName: string
+  personalNumber: string
+  department: string
+  phone: string
+  platform: "civilian" | "military"
+  requestType: "website" | "software" | "other"
+  description: string
+  status: "pending" | "taken" | "completed" | "rejected"
+  takenByUserId?: string
+  projectId?: string
+  createdAt: string
+  updatedAt: string
 }

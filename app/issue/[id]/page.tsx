@@ -2,8 +2,10 @@ import { notFound } from "next/navigation"
 import { IssueDetail } from "@/components/issue-detail"
 import { getIssue, getProject } from "@/lib/db"
 
-export default async function IssuePage({ params }: { params: { id: string } }) {
-  const { id } = params
+export const dynamic = 'force-dynamic'
+
+export default async function IssuePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const issue = await getIssue(id)
 
   if (!issue) {

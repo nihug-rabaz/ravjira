@@ -2,7 +2,12 @@ import { neon } from "@neondatabase/serverless"
 import { cookies } from "next/headers"
 import { nanoid } from "nanoid"
 
-const sql = neon(process.env.DATABASE_URL!)
+function getSql() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL environment variable is not set")
+  }
+  return neon(process.env.DATABASE_URL)
+}
 
 // Simple password hashing (in production, use bcrypt)
 async function hashPassword(password: string): Promise<string> {
@@ -14,7 +19,7 @@ async function hashPassword(password: string): Promise<string> {
 }
 
 export async function register(email: string, password: string, name: string) {
-  // Check if user already exists
+  const sql = getSql()
   const existingUser = await sql`
     SELECT id FROM users WHERE email = ${email}
   `
@@ -56,6 +61,7 @@ export async function register(email: string, password: string, name: string) {
 }
 
 export async function login(email: string, password: string) {
+  const sql = getSql()
   const passwordHash = await hashPassword(password)
 
   const user = await sql`
@@ -90,6 +96,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function logout() {
+  const sql = getSql()
   const cookieStore = await cookies()
   const sessionId = cookieStore.get("session")?.value
 
@@ -102,6 +109,7 @@ export async function logout() {
 }
 
 export async function getCurrentUser() {
+  const sql = getSql()
   const cookieStore = await cookies()
   const sessionId = cookieStore.get("session")?.value
 

@@ -6,7 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { UserMenu } from "@/components/user-menu"
 import { CreateProjectDialog } from "@/components/create-project-dialog"
+import { SearchBar } from "@/components/search-bar"
+import { NotificationsBell } from "@/components/notifications-bell"
+import { KeyboardShortcutsProvider } from "@/components/keyboard-shortcuts-provider"
 import { redirect } from "next/navigation"
+
+export const dynamic = 'force-dynamic'
 
 export default async function ProjectsPage() {
   const user = await getCurrentUser()
@@ -17,20 +22,25 @@ export default async function ProjectsPage() {
   const projects = await getProjects()
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Header */}
-      <header className="border-b bg-background">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded bg-primary">
-                  <Folder className="h-6 w-6 text-primary-foreground" />
+    <KeyboardShortcutsProvider>
+      <div className="min-h-screen bg-muted/30">
+        {/* Header */}
+        <header className="border-b bg-background">
+        <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Link href="/" className="flex items-center gap-2 sm:gap-3">
+                <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded bg-primary shrink-0">
+                  <Folder className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
                 </div>
-                <h1 className="text-2xl font-bold text-primary">RavJira</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-primary">RavJira</h1>
               </Link>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="hidden sm:block">
+                <SearchBar />
+              </div>
+              <NotificationsBell />
               <CreateProjectDialog />
               <UserMenu user={user} />
             </div>
@@ -40,12 +50,21 @@ export default async function ProjectsPage() {
 
       {/* Projects Grid */}
       <main className="container mx-auto px-6 py-8">
-        <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+        <div>
           <h2 className="text-lg font-semibold text-foreground">Your Projects</h2>
           <p className="text-sm text-muted-foreground">
             {projects.length} {projects.length === 1 ? "project" : "projects"}
           </p>
         </div>
+        <div className="flex gap-2">
+          <Link href="/requests">
+            <Button variant="outline">
+              בקשות חדשות
+            </Button>
+          </Link>
+        </div>
+      </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
@@ -60,7 +79,18 @@ export default async function ProjectsPage() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg">{project.name}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">{project.name}</CardTitle>
+                        {(project.environment === "military" || project.environment === "civilian") && (
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                            project.environment === "military" 
+                              ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" 
+                              : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                          }`}>
+                            {project.environment === "military" ? "צה\"לי" : "אזרחי"}
+                          </span>
+                        )}
+                      </div>
                       <CardDescription className="text-xs font-mono">{project.key}</CardDescription>
                     </div>
                   </div>
@@ -95,6 +125,7 @@ export default async function ProjectsPage() {
           </div>
         )}
       </main>
-    </div>
+      </div>
+    </KeyboardShortcutsProvider>
   )
 }

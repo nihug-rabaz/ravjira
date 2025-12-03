@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     console.log("[v0] Request body:", body)
 
-    const { name, key, description, avatar } = body
+    const { name, key, description, avatar, environment } = body
 
     if (!name || !key) {
       console.log("[v0] Missing required fields")
@@ -41,6 +41,7 @@ export async function POST(request: Request) {
       key: key.toUpperCase(),
       description: description || "",
       avatar,
+      environment: environment || "civilian",
       creatorId: user.id,
     })
 

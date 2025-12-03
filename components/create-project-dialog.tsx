@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus } from "lucide-react"
 
 interface CreateProjectDialogProps {
@@ -31,6 +32,7 @@ export function CreateProjectDialog({ trigger }: CreateProjectDialogProps) {
     name: "",
     key: "",
     description: "",
+    environment: "civilian" as "civilian" | "military",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,7 +51,7 @@ export function CreateProjectDialog({ trigger }: CreateProjectDialogProps) {
       const project = await response.json()
 
       setOpen(false)
-      setFormData({ name: "", key: "", description: "" })
+      setFormData({ name: "", key: "", description: "", environment: "civilian" })
 
       // Navigate to the newly created project
       router.push(`/project/${project.id}`)
@@ -121,6 +123,24 @@ export function CreateProjectDialog({ trigger }: CreateProjectDialogProps) {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={4}
               />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="environment">Environment</Label>
+              <Select
+                value={formData.environment}
+                onValueChange={(value) => setFormData({ ...formData, environment: value as "civilian" | "military" })}
+              >
+                <SelectTrigger id="environment">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="civilian">סביבה אזרחית</SelectItem>
+                  <SelectItem value="military">צה"לי</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                בחר איפה הפרויקט מפותח - בסביבה האזרחית או בצה"לי
+              </p>
             </div>
           </div>
           <DialogFooter>

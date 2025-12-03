@@ -21,7 +21,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { EditProjectDialog } from "./edit-project-dialog"
-import { MoreVertical, Edit, Trash2 } from "lucide-react"
+import { GitHubIntegrationDialog } from "./github-integration-dialog"
+import { VercelIntegrationDialog } from "./vercel-integration-dialog"
+import { MoreVertical, Edit, Trash2, Github, Zap } from "lucide-react"
 import type { Project } from "@/lib/types"
 
 interface ProjectSettingsMenuProps {
@@ -31,6 +33,8 @@ interface ProjectSettingsMenuProps {
 export function ProjectSettingsMenu({ project }: ProjectSettingsMenuProps) {
   const router = useRouter()
   const [editOpen, setEditOpen] = useState(false)
+  const [githubOpen, setGithubOpen] = useState(false)
+  const [vercelOpen, setVercelOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -67,6 +71,14 @@ export function ProjectSettingsMenu({ project }: ProjectSettingsMenuProps) {
             <Edit className="mr-2 h-4 w-4" />
             Edit Project
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setGithubOpen(true)}>
+            <Github className="mr-2 h-4 w-4" />
+            GitHub Integration
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setVercelOpen(true)}>
+            <Zap className="mr-2 h-4 w-4" />
+            Vercel Integration
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive">
             <Trash2 className="mr-2 h-4 w-4" />
@@ -76,6 +88,8 @@ export function ProjectSettingsMenu({ project }: ProjectSettingsMenuProps) {
       </DropdownMenu>
 
       <EditProjectDialog project={project} open={editOpen} onOpenChange={setEditOpen} />
+      <GitHubIntegrationDialog project={project} open={githubOpen} onOpenChange={setGithubOpen} />
+      <VercelIntegrationDialog project={project} open={vercelOpen} onOpenChange={setVercelOpen} />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>

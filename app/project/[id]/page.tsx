@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation"
-import { KanbanBoard } from "@/components/kanban-board"
-import { ProjectHeader } from "@/components/project-header"
 import { getProject, getIssuesByProject } from "@/lib/db"
+import { getCurrentUser } from "@/lib/auth"
+import { ProjectPageClient } from "@/components/project-page-client"
 
-export default async function ProjectPage({ params }: { params: { id: string } }) {
-  const { id } = params
+export const dynamic = 'force-dynamic'
+
+export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const project = await getProject(id)
 
   if (!project) {
@@ -12,13 +14,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
   }
 
   const issues = await getIssuesByProject(project.id)
+  const user = await getCurrentUser()
 
-  return (
-    <div className="min-h-screen bg-muted/30">
-      <ProjectHeader project={project} />
-      <main className="container mx-auto px-6 py-6">
-        <KanbanBoard project={project} initialIssues={issues} />
-      </main>
-    </div>
-  )
+  return <ProjectPageClient project={project} issues={issues} user={user} />
 }

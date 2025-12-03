@@ -6,7 +6,10 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
-    "start": "next start"
+    "start": "powershell -ExecutionPolicy Bypass -File ./start.ps1",
+    "start:next": "next start",
+    "init-db": "node scripts/init-db.js",
+    "drop-tables": "node scripts/drop-tables.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -67,6 +70,8 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
+    "dotenv-cli": "^11.0.0",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
