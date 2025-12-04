@@ -61,7 +61,10 @@ export function KanbanBoard({ project, initialIssues }: KanbanBoardProps) {
     <div className="space-y-3 sm:space-y-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-base sm:text-lg font-semibold text-foreground">Board</h2>
-        <CreateIssueDialog projectId={project.id} />
+        <CreateIssueDialog
+          projectId={project.id}
+          onIssueCreated={(issue) => setIssues((prev) => [...prev, issue])}
+        />
       </div>
 
       <div className="flex gap-2 sm:gap-4 overflow-x-auto pb-4 -mx-3 sm:-mx-6 px-3 sm:px-6">

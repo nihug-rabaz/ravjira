@@ -10,16 +10,17 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { IssueType, IssuePriority, IssueStatus, User } from "@/lib/types"
+import type { Issue, IssueType, IssuePriority, IssueStatus, User } from "@/lib/types"
 import { Plus } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface CreateIssueDialogProps {
   projectId: string
   trigger?: React.ReactNode
+  onIssueCreated?: (issue: Issue) => void
 }
 
-export function CreateIssueDialog({ projectId, trigger }: CreateIssueDialogProps) {
+export function CreateIssueDialog({ projectId, trigger, onIssueCreated }: CreateIssueDialogProps) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -62,7 +63,8 @@ export function CreateIssueDialog({ projectId, trigger }: CreateIssueDialogProps
       })
 
       if (res.ok) {
-        // Reset form
+        const createdIssue: Issue = await res.json()
+
         setTitle("")
         setDescription("")
         setType("task")
@@ -71,8 +73,11 @@ export function CreateIssueDialog({ projectId, trigger }: CreateIssueDialogProps
         setAssigneeId("")
         setOpen(false)
 
-        // Refresh the page to show the new issue
-        router.refresh()
+        if (onIssueCreated) {
+          onIssueCreated(createdIssue)
+        } else {
+          router.refresh()
+        }
       }
     } catch (error) {
       console.error("[v0] Error creating issue:", error)

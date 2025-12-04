@@ -42,7 +42,10 @@ export function IssuesListView({ project, initialIssues }: IssuesListViewProps) 
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-foreground">Issues</h2>
-        <CreateIssueDialog projectId={project.id} />
+        <CreateIssueDialog
+          projectId={project.id}
+          onIssueCreated={(issue) => setIssues((prev) => [...prev, issue])}
+        />
       </div>
 
       <div className="flex gap-4 items-center">
