@@ -12,3 +12,4 @@ CREATE TABLE IF NOT EXISTS project_vercel_projects (
 CREATE INDEX IF NOT EXISTS idx_project_vercel_projects_project ON project_vercel_projects(project_id);
 CREATE INDEX IF NOT EXISTS idx_project_vercel_projects_vercel ON project_vercel_projects(vercel_project_id);
 
+

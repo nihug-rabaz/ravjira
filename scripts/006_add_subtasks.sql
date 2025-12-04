@@ -9,3 +9,4 @@ CREATE TABLE IF NOT EXISTS subtasks (
 
 CREATE INDEX IF NOT EXISTS idx_subtasks_parent_issue_id ON subtasks(parent_issue_id);
 
+

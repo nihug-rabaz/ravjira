@@ -26,3 +26,4 @@ CREATE INDEX IF NOT EXISTS idx_issue_labels_issue_id ON issue_labels(issue_id);
 CREATE INDEX IF NOT EXISTS idx_issue_labels_label_id ON issue_labels(label_id);
 CREATE INDEX IF NOT EXISTS idx_issue_history_issue_id ON issue_history(issue_id);
 
+

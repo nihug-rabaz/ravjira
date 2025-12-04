@@ -11,3 +11,4 @@ CREATE TABLE IF NOT EXISTS project_github_repos (
 CREATE INDEX IF NOT EXISTS idx_project_github_repos_project ON project_github_repos(project_id);
 CREATE INDEX IF NOT EXISTS idx_project_github_repos_repo ON project_github_repos(github_owner, github_repo);
 
+
