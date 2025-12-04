@@ -55,7 +55,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             : updates[key]?.toString() || ""
           
           if (oldValue !== newValue) {
-            await addIssueHistory(id, user.id, fieldName, oldValue, newValue)
+            await addIssueHistory({
+              issueId: id,
+              userId: user.id,
+              field: fieldName,
+              oldValue,
+              newValue,
+            })
 
             if (key === "assigneeId" && updates[key] && updates[key] !== currentIssue.assigneeId) {
               await createNotification({

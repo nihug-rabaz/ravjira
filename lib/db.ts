@@ -401,43 +401,26 @@ export async function createIssue(issue: Omit<Issue, "id" | "createdAt" | "updat
 }
 
 export async function updateIssue(id: string, updates: Partial<Issue>): Promise<Issue | null> {
-  const sets: string[] = []
-  const values: any[] = []
+  const sql = getSql()
 
   if (updates.title !== undefined) {
-    sets.push(`title = $${sets.length + 1}`)
-    values.push(updates.title)
+    await sql`UPDATE issues SET title = ${updates.title}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
   }
   if (updates.description !== undefined) {
-    sets.push(`description = $${sets.length + 1}`)
-    values.push(updates.description)
+    await sql`UPDATE issues SET description = ${updates.description}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
   }
   if (updates.type !== undefined) {
-    sets.push(`type = $${sets.length + 1}`)
-    values.push(updates.type)
+    await sql`UPDATE issues SET type = ${updates.type}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
   }
   if (updates.status !== undefined) {
-    sets.push(`status = $${sets.length + 1}`)
-    values.push(updates.status)
+    await sql`UPDATE issues SET status = ${updates.status}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
   }
   if (updates.priority !== undefined) {
-    sets.push(`priority = $${sets.length + 1}`)
-    values.push(updates.priority)
+    await sql`UPDATE issues SET priority = ${updates.priority}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
   }
   if (updates.assigneeId !== undefined) {
-    sets.push(`assignee_id = $${sets.length + 1}`)
-    values.push(updates.assigneeId)
+    await sql`UPDATE issues SET assignee_id = ${updates.assigneeId}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
   }
-
-  if (sets.length === 0) return getIssue(id)
-
-  sets.push(`updated_at = CURRENT_TIMESTAMP`)
-
-  await sql`
-    UPDATE issues
-    SET ${sql(sets.join(", "))}
-    WHERE id = ${id}
-  `
 
   return getIssue(id)
 }
@@ -859,7 +842,7 @@ export async function updateSubtask(subtaskId: string, updates: {
   const s = result[0]
   return {
     id: s.id,
-    issueId: s.issue_id,
+    issueId: s.parent_issue_id,
     title: s.title,
     status: s.status,
     createdAt: s.created_at,
@@ -1055,7 +1038,7 @@ export async function deleteIssue(issueId: string): Promise<void> {
   await sql`DELETE FROM issue_labels WHERE issue_id = ${issueId}`
   await sql`DELETE FROM issue_history WHERE issue_id = ${issueId}`
   await sql`DELETE FROM attachments WHERE issue_id = ${issueId}`
-  await sql`DELETE FROM subtasks WHERE issue_id = ${issueId}`
+  await sql`DELETE FROM subtasks WHERE parent_issue_id = ${issueId}`
   await sql`DELETE FROM time_logs WHERE issue_id = ${issueId}`
   await sql`DELETE FROM issues WHERE id = ${issueId}`
 }
