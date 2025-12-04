@@ -22,7 +22,7 @@ export function IssueCard({ issue, onDragStart }: IssueCardProps) {
       >
         <div className="space-y-2">
           <p className="text-sm font-medium text-foreground line-clamp-2 text-balance">
-            {issue.description || issue.title}
+            {issue.title}
           </p>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

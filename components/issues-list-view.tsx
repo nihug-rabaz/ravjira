@@ -116,9 +116,14 @@ export function IssuesListView({ project, initialIssues }: IssuesListViewProps) 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-sm font-medium text-foreground truncate">
-                          {issue.description || issue.title}
+                          {issue.title}
                         </h3>
                       </div>
+                      {issue.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-1">
+                          {issue.description}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
