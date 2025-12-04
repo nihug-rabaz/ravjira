@@ -115,12 +115,10 @@ export function IssuesListView({ project, initialIssues }: IssuesListViewProps) 
                     <IssueTypeIcon type={issue.type} className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-mono text-xs text-muted-foreground">{issue.key}</span>
-                        <h3 className="text-sm font-medium text-foreground truncate">{issue.title}</h3>
+                        <h3 className="text-sm font-medium text-foreground truncate">
+                          {issue.description || issue.title}
+                        </h3>
                       </div>
-                      {issue.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-1">{issue.description}</p>
-                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">

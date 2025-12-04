@@ -21,11 +21,17 @@ export function IssueCard({ issue, onDragStart }: IssueCardProps) {
         className="p-3 cursor-pointer hover:shadow-md transition-shadow bg-background"
       >
         <div className="space-y-2">
-          <p className="text-sm font-medium text-foreground line-clamp-2 text-balance">{issue.title}</p>
+          <p className="text-sm font-medium text-foreground line-clamp-2 text-balance">
+            {issue.description || issue.title}
+          </p>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <IssueTypeIcon type={issue.type} className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-mono text-muted-foreground">{issue.key}</span>
+              {issue.description && (
+                <span className="text-xs text-muted-foreground line-clamp-1">
+                  {issue.description}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <PriorityIcon priority={issue.priority} />
