@@ -43,6 +43,8 @@ export function GitHubIntegrationDialog({ project, open, onOpenChange }: GitHubI
   const [repos, setRepos] = useState<GitHubRepoOption[]>([])
   const [connectedRepos, setConnectedRepos] = useState<GitHubRepo[]>([])
   const [selectedRepo, setSelectedRepo] = useState<string>("")
+  const [manualRepoUrl, setManualRepoUrl] = useState<string>("")
+  const [useManualUrl, setUseManualUrl] = useState(false)
   const [createNew, setCreateNew] = useState(false)
   const [newRepoName, setNewRepoName] = useState("")
   const [newRepoDescription, setNewRepoDescription] = useState("")
@@ -50,6 +52,7 @@ export function GitHubIntegrationDialog({ project, open, onOpenChange }: GitHubI
   const [loading, setLoading] = useState(false)
   const [loadingRepos, setLoadingRepos] = useState(false)
   const [removingRepoId, setRemovingRepoId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (open) {
@@ -72,15 +75,26 @@ export function GitHubIntegrationDialog({ project, open, onOpenChange }: GitHubI
 
   const fetchRepos = async () => {
     setLoadingRepos(true)
+    setError(null)
     try {
       const res = await fetch("/api/github/repos")
       if (res.ok) {
         const data = await res.json()
-        setRepos(data)
+        if (Array.isArray(data)) {
+          setRepos(data)
+          if (data.length === 0) {
+            setError("No repositories found. You can enter a repository URL manually.")
+          }
+        } else {
+          setError("Failed to load repositories. You can enter a repository URL manually.")
+        }
       } else {
-        console.error("[v0] Failed to fetch repositories")
+        const errorData = await res.json().catch(() => ({ error: "Unknown error" }))
+        setError(errorData.error || "Failed to fetch repositories. You can enter a repository URL manually.")
+        console.error("[v0] Failed to fetch repositories:", errorData)
       }
     } catch (error) {
+      setError("Failed to connect to GitHub. You can enter a repository URL manually.")
       console.error("[v0] Error fetching repositories:", error)
     } finally {
       setLoadingRepos(false)
@@ -123,10 +137,11 @@ export function GitHubIntegrationDialog({ project, open, onOpenChange }: GitHubI
   }
 
   const handleConnect = async (repoUrl?: string, owner?: string, repo?: string) => {
-    const url = repoUrl || selectedRepo
+    const url = repoUrl || selectedRepo || manualRepoUrl
     if (!url) return
 
     setLoading(true)
+    setError(null)
     try {
       let finalUrl = url
       let finalOwner = owner
@@ -162,9 +177,12 @@ export function GitHubIntegrationDialog({ project, open, onOpenChange }: GitHubI
       if (res.ok) {
         await fetchConnectedRepos()
         setSelectedRepo("")
+        setManualRepoUrl("")
+        setUseManualUrl(false)
       } else {
-        const error = await res.json()
-        alert(error.error || "Failed to connect GitHub repository")
+        const errorData = await res.json()
+        setError(errorData.error || "Failed to connect GitHub repository")
+        alert(errorData.error || "Failed to connect GitHub repository")
       }
     } catch (error) {
       console.error("[v0] Error connecting GitHub:", error)
