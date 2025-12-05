@@ -107,10 +107,13 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
 
     try {
       let commitInfo: any = null
-      if (project.githubRepos && project.githubRepos.length > 0) {
-        const repo = project.githubRepos[0]
+      const selectedRepo = issue.githubRepoId 
+        ? project.githubRepos?.find(r => r.id === issue.githubRepoId)
+        : project.githubRepos?.[0]
+      
+      if (selectedRepo) {
         const res = await fetch(
-          `/api/github/commit/${commitId.trim()}?owner=${repo.githubOwner}&repo=${repo.githubRepo}`
+          `/api/github/commit/${commitId.trim()}?owner=${selectedRepo.githubOwner}&repo=${selectedRepo.githubRepo}`
         )
         if (res.ok) {
           commitInfo = await res.json()
@@ -122,14 +125,17 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
         commitId: commitId.trim(),
       }
 
+      if (selectedRepo) {
+        updates.githubRepoId = selectedRepo.id
+      }
+
       if (commitInfo) {
         updates.commitMessage = commitInfo.message
         updates.commitUrl = commitInfo.url
         updates.commitAuthor = commitInfo.author
         updates.commitDate = commitInfo.date
-      } else if (project.githubRepos && project.githubRepos.length > 0) {
-        const repo = project.githubRepos[0]
-        updates.commitUrl = `https://github.com/${repo.githubOwner}/${repo.githubRepo}/commit/${commitId.trim()}`
+      } else if (selectedRepo) {
+        updates.commitUrl = `https://github.com/${selectedRepo.githubOwner}/${selectedRepo.githubRepo}/commit/${commitId.trim()}`
       }
 
       const res = await fetch(`/api/issues/${issue.id}`, {
