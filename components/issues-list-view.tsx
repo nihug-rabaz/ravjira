@@ -9,8 +9,10 @@ import { PriorityIcon } from "@/components/priority-icon"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { CreateIssueDialog } from "@/components/create-issue-dialog"
+import { BulkOperations } from "@/components/bulk-operations"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Search, Filter } from "lucide-react"
 
 interface IssuesListViewProps {
@@ -20,6 +22,7 @@ interface IssuesListViewProps {
 
 export function IssuesListView({ project, initialIssues }: IssuesListViewProps) {
   const [issues, setIssues] = useState<Issue[]>(initialIssues)
+  const [selectedIssues, setSelectedIssues] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [priorityFilter, setPriorityFilter] = useState<string>("all")
@@ -38,14 +41,34 @@ export function IssuesListView({ project, initialIssues }: IssuesListViewProps) 
     return matchesSearch && matchesStatus && matchesPriority && matchesType
   })
 
+  const toggleSelect = (issueId: string) => {
+    setSelectedIssues((prev) => (prev.includes(issueId) ? prev.filter((id) => id !== issueId) : [...prev, issueId]))
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIssues.length === filteredIssues.length) {
+      setSelectedIssues([])
+    } else {
+      setSelectedIssues(filteredIssues.map((issue) => issue.id))
+    }
+  }
+
+  const handleBulkComplete = () => {
+    setSelectedIssues([])
+    window.location.reload()
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-foreground">Issues</h2>
-        <CreateIssueDialog
-          projectId={project.id}
-          onIssueCreated={(issue) => setIssues((prev) => [...prev, issue])}
-        />
+        <div className="flex items-center gap-2">
+          {selectedIssues.length > 0 && <BulkOperations selectedIssues={selectedIssues} onComplete={handleBulkComplete} />}
+          <CreateIssueDialog
+            projectId={project.id}
+            onIssueCreated={(issue) => setIssues((prev) => [...prev, issue])}
+          />
+        </div>
       </div>
 
       <div className="flex gap-4 items-center">
@@ -106,12 +129,28 @@ export function IssuesListView({ project, initialIssues }: IssuesListViewProps) 
           <div className="text-center py-12 text-muted-foreground">
             <p>No issues found</p>
           </div>
-        ) : (
+        ) : filteredIssues.length > 0 ? (
+          <div className="flex items-center gap-2 p-2 border-b">
+            <Checkbox
+              checked={selectedIssues.length === filteredIssues.length && filteredIssues.length > 0}
+              onCheckedChange={toggleSelectAll}
+            />
+            <span className="text-sm text-muted-foreground">
+              {selectedIssues.length > 0 ? `${selectedIssues.length} selected` : "Select all"}
+            </span>
+          </div>
+        ) : null}
+        {filteredIssues.length > 0 && (
           filteredIssues.map((issue) => (
-            <Link key={issue.id} href={`/issue/${issue.id}`}>
-              <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
+            <Card key={issue.id} className="p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <Checkbox
+                    checked={selectedIssues.includes(issue.id)}
+                    onCheckedChange={() => toggleSelect(issue.id)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <Link href={`/issue/${issue.id}`} className="flex items-center gap-4 flex-1 min-w-0">
                     <IssueTypeIcon type={issue.type} className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -125,7 +164,7 @@ export function IssuesListView({ project, initialIssues }: IssuesListViewProps) 
                         </p>
                       )}
                     </div>
-                  </div>
+                  </Link>
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <PriorityIcon priority={issue.priority} />
                     {issue.assignee && issue.assignee.name && (
