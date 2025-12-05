@@ -168,24 +168,43 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
               </div>
             )}
             {commitInfo?.files && commitInfo.files.length > 0 && (
-              <div className="mt-3 space-y-1">
-                <p className="text-xs font-semibold text-muted-foreground uppercase">Files Changed:</p>
-                <div className="space-y-1 max-h-40 overflow-y-auto">
+              <div className="mt-3 space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase">Files Changed ({commitInfo.files.length}):</p>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
                   {commitInfo.files.map((file: any, idx: number) => (
-                    <div key={idx} className="text-xs p-2 bg-muted rounded flex items-center justify-between">
-                      <span className="font-mono">{file.filename}</span>
-                      <div className="flex items-center gap-2">
-                        {file.additions > 0 && (
-                          <span className="text-green-600">+{file.additions}</span>
-                        )}
-                        {file.deletions > 0 && (
-                          <span className="text-red-600">-{file.deletions}</span>
-                        )}
-                        <span className="text-muted-foreground">{file.status}</span>
+                    <div key={idx} className="text-xs border rounded p-2 bg-muted/50">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-mono text-xs">{file.filename}</span>
+                        <div className="flex items-center gap-2">
+                          {file.additions > 0 && (
+                            <span className="text-green-600 font-medium">+{file.additions}</span>
+                          )}
+                          {file.deletions > 0 && (
+                            <span className="text-red-600 font-medium">-{file.deletions}</span>
+                          )}
+                          <span className="text-muted-foreground capitalize px-1.5 py-0.5 rounded bg-background text-[10px]">
+                            {file.status}
+                          </span>
+                        </div>
                       </div>
+                      {file.patch && (
+                        <details className="mt-2">
+                          <summary className="cursor-pointer text-muted-foreground hover:text-foreground text-[10px]">
+                            Show diff
+                          </summary>
+                          <pre className="mt-2 p-2 bg-background rounded text-[10px] overflow-x-auto max-h-40 overflow-y-auto font-mono">
+                            {file.patch}
+                          </pre>
+                        </details>
+                      )}
                     </div>
                   ))}
                 </div>
+                {commitInfo.stats && (
+                  <div className="pt-2 border-t text-xs text-muted-foreground">
+                    Total: +{commitInfo.stats.additions} / -{commitInfo.stats.deletions} ({commitInfo.stats.total} changes)
+                  </div>
+                )}
               </div>
             )}
           </div>
