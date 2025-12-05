@@ -5,10 +5,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params
     const sprints = await getSprintsByProject(id)
+    if (!Array.isArray(sprints)) {
+      return NextResponse.json([])
+    }
     return NextResponse.json(sprints)
   } catch (error) {
     console.error("[v0] Error fetching sprints:", error)
-    return NextResponse.json({ error: "Failed to fetch sprints" }, { status: 500 })
+    return NextResponse.json([], { status: 200 })
   }
 }
 

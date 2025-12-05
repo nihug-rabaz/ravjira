@@ -31,9 +31,14 @@ export function SprintManagement({ projectId }: SprintManagementProps) {
     try {
       const res = await fetch(`/api/projects/${projectId}/sprints`)
       const data = await res.json()
-      setSprints(data)
+      if (Array.isArray(data)) {
+        setSprints(data)
+      } else {
+        setSprints([])
+      }
     } catch (error) {
       console.error("[v0] Error fetching sprints:", error)
+      setSprints([])
     }
   }
 

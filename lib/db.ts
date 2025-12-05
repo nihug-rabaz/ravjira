@@ -1070,23 +1070,31 @@ export async function getProjectMembers(projectId: string): Promise<User[]> {
 }
 
 export async function getSprintsByProject(projectId: string): Promise<Sprint[]> {
-  const sql = getSql()
-  const sprints = await sql`
-    SELECT * FROM sprints
-    WHERE project_id = ${projectId}
-    ORDER BY start_date DESC, created_at DESC
-  `
-  return sprints.map((s: any) => ({
-    id: s.id,
-    projectId: s.project_id,
-    name: s.name,
-    goal: s.goal,
-    startDate: s.start_date,
-    endDate: s.end_date,
-    status: s.status,
-    createdAt: s.created_at,
-    updatedAt: s.updated_at,
-  })) as Sprint[]
+  try {
+    const sql = getSql()
+    const sprints = await sql`
+      SELECT * FROM sprints
+      WHERE project_id = ${projectId}
+      ORDER BY start_date DESC, created_at DESC
+    `
+    if (!Array.isArray(sprints)) {
+      return []
+    }
+    return sprints.map((s: any) => ({
+      id: s.id,
+      projectId: s.project_id,
+      name: s.name,
+      goal: s.goal,
+      startDate: s.start_date,
+      endDate: s.end_date,
+      status: s.status,
+      createdAt: s.created_at,
+      updatedAt: s.updated_at,
+    })) as Sprint[]
+  } catch (error) {
+    console.error("[v0] Error fetching sprints:", error)
+    return []
+  }
 }
 
 export async function getSprint(id: string): Promise<Sprint | null> {
