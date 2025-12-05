@@ -379,6 +379,7 @@ export async function getIssue(id: string): Promise<Issue | null> {
     assigneeId: i.assignee_id,
     reporterId: i.reporter_id,
     epicId: i.epic_id,
+    githubRepoId: i.github_repo_id,
     commitId: i.commit_id,
     commitMessage: i.commit_message,
     commitUrl: i.commit_url,
