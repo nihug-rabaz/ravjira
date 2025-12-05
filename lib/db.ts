@@ -381,6 +381,7 @@ export async function getIssue(id: string): Promise<Issue | null> {
     reporterId: i.reporter_id,
     epicId: i.epic_id,
     githubRepoId: i.github_repo_id,
+    vercelProjectId: i.vercel_project_id,
     commitId: i.commit_id,
     commitMessage: i.commit_message,
     commitUrl: i.commit_url,
