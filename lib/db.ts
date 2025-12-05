@@ -787,9 +787,13 @@ export async function deleteAttachment(attachmentId: string): Promise<void> {
 export async function getSubtasksByIssue(issueId: string): Promise<any[]> {
   const sql = getSql()
   const subtasks = await sql`
-    SELECT * FROM subtasks
-    WHERE parent_issue_id = ${issueId}
-    ORDER BY created_at ASC
+    SELECT 
+      s.*,
+      json_build_object('id', u.id, 'name', u.name, 'email', u.email, 'avatar', u.avatar) as assignee
+    FROM subtasks s
+    LEFT JOIN users u ON s.assignee_id = u.id
+    WHERE s.parent_issue_id = ${issueId}
+    ORDER BY s.created_at ASC
   `
 
   return subtasks.map((s: any) => ({
@@ -797,24 +801,35 @@ export async function getSubtasksByIssue(issueId: string): Promise<any[]> {
     issueId: s.parent_issue_id,
     title: s.title,
     status: s.status,
+    assigneeId: s.assignee_id,
+    assignee: s.assignee,
+    priority: s.priority || "medium",
     createdAt: s.created_at,
+    updatedAt: s.updated_at,
   }))
 }
 
 export async function createSubtask(subtask: {
   issueId: string
   title: string
+  assigneeId?: string
+  priority?: string
 }): Promise<any> {
   const sql = getSql()
   const id = `subtask-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
   await sql`
-    INSERT INTO subtasks (id, parent_issue_id, title, status)
-    VALUES (${id}, ${subtask.issueId}, ${subtask.title}, 'todo')
+    INSERT INTO subtasks (id, parent_issue_id, title, status, assignee_id, priority)
+    VALUES (${id}, ${subtask.issueId}, ${subtask.title}, 'todo', ${subtask.assigneeId || null}, ${subtask.priority || 'medium'})
   `
 
   const result = await sql`
-    SELECT * FROM subtasks WHERE id = ${id}
+    SELECT 
+      s.*,
+      json_build_object('id', u.id, 'name', u.name, 'email', u.email, 'avatar', u.avatar) as assignee
+    FROM subtasks s
+    LEFT JOIN users u ON s.assignee_id = u.id
+    WHERE s.id = ${id}
   `
 
   const s = result[0]
@@ -823,24 +838,41 @@ export async function createSubtask(subtask: {
     issueId: s.parent_issue_id,
     title: s.title,
     status: s.status,
+    assigneeId: s.assignee_id,
+    assignee: s.assignee,
+    priority: s.priority || "medium",
     createdAt: s.created_at,
+    updatedAt: s.updated_at,
   }
 }
 
 export async function updateSubtask(subtaskId: string, updates: {
   title?: string
   status?: string
+  assigneeId?: string
+  priority?: string
 }): Promise<any> {
   const sql = getSql()
   if (updates.title !== undefined) {
-    await sql`UPDATE subtasks SET title = ${updates.title} WHERE id = ${subtaskId}`
+    await sql`UPDATE subtasks SET title = ${updates.title}, updated_at = CURRENT_TIMESTAMP WHERE id = ${subtaskId}`
   }
   if (updates.status !== undefined) {
-    await sql`UPDATE subtasks SET status = ${updates.status} WHERE id = ${subtaskId}`
+    await sql`UPDATE subtasks SET status = ${updates.status}, updated_at = CURRENT_TIMESTAMP WHERE id = ${subtaskId}`
+  }
+  if (updates.assigneeId !== undefined) {
+    await sql`UPDATE subtasks SET assignee_id = ${updates.assigneeId || null}, updated_at = CURRENT_TIMESTAMP WHERE id = ${subtaskId}`
+  }
+  if (updates.priority !== undefined) {
+    await sql`UPDATE subtasks SET priority = ${updates.priority}, updated_at = CURRENT_TIMESTAMP WHERE id = ${subtaskId}`
   }
 
   const result = await sql`
-    SELECT * FROM subtasks WHERE id = ${subtaskId}
+    SELECT 
+      s.*,
+      json_build_object('id', u.id, 'name', u.name, 'email', u.email, 'avatar', u.avatar) as assignee
+    FROM subtasks s
+    LEFT JOIN users u ON s.assignee_id = u.id
+    WHERE s.id = ${subtaskId}
   `
 
   if (result.length === 0) return null
@@ -851,7 +883,11 @@ export async function updateSubtask(subtaskId: string, updates: {
     issueId: s.parent_issue_id,
     title: s.title,
     status: s.status,
+    assigneeId: s.assignee_id,
+    assignee: s.assignee,
+    priority: s.priority || "medium",
     createdAt: s.created_at,
+    updatedAt: s.updated_at,
   }
 }
 

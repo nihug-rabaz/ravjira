@@ -10,6 +10,7 @@ import { UserMenu } from "@/components/user-menu"
 import { ProjectSettingsMenu } from "@/components/project-settings-menu"
 import { NotificationsBell } from "@/components/notifications-bell"
 import { TeamDialog } from "@/components/team-dialog"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 interface ProjectHeaderProps {
   project: Project
@@ -88,6 +89,7 @@ export function ProjectHeader({ project, user }: ProjectHeaderProps) {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+              <LanguageSwitcher />
               <NotificationsBell />
               <TeamDialogButton project={project} />
               <ProjectSettingsMenu project={project} />

@@ -15,13 +15,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const { title } = await request.json()
+    const { title, assigneeId, priority } = await request.json()
 
     if (!title) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 })
     }
 
-    const subtask = await createSubtask({ issueId: id, title })
+    const subtask = await createSubtask({ issueId: id, title, assigneeId, priority })
     return NextResponse.json(subtask)
   } catch (error) {
     console.error("[v0] Error creating subtask:", error)

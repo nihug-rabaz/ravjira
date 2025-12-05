@@ -106,6 +106,9 @@ export interface Subtask {
   parentIssueId: string
   title: string
   status: "todo" | "in-progress" | "done"
+  assignee?: User
+  assigneeId?: string
+  priority?: IssuePriority
   createdAt: string
   updatedAt: string
 }
