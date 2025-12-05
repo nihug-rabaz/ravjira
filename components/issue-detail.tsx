@@ -625,7 +625,7 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
             {/* GitHub Integration */}
             {project.githubRepos && project.githubRepos.length > 0 && (
               <div className="space-y-2">
-                <Label>Create Issue on GitHub</Label>
+                <LabelComponent>Create Issue on GitHub</LabelComponent>
                 {project.githubRepos.map((repo) => (
                   <Button
                     key={repo.id}
