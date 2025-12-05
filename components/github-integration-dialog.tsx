@@ -293,38 +293,79 @@ export function GitHubIntegrationDialog({ project, open, onOpenChange }: GitHubI
             {!createNew ? (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="repoSelect">Select Repository</Label>
-                  {loadingRepos ? (
-                    <div className="flex items-center justify-center p-4">
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      <span className="text-sm text-muted-foreground">Loading repositories...</span>
-                    </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Button
+                      variant={!useManualUrl ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setUseManualUrl(false)}
+                      className="flex-1"
+                    >
+                      Select from List
+                    </Button>
+                    <Button
+                      variant={useManualUrl ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setUseManualUrl(true)}
+                      className="flex-1"
+                    >
+                      Enter URL Manually
+                    </Button>
+                  </div>
+
+                  {!useManualUrl ? (
+                    <>
+                      <Label htmlFor="repoSelect">Select Repository</Label>
+                      {loadingRepos ? (
+                        <div className="flex items-center justify-center p-4">
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          <span className="text-sm text-muted-foreground">Loading repositories...</span>
+                        </div>
+                      ) : (
+                        <Select value={selectedRepo} onValueChange={setSelectedRepo}>
+                          <SelectTrigger id="repoSelect">
+                            <SelectValue placeholder="Select a repository" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {repos
+                              .filter((repo) => !connectedRepos.some((cr) => cr.githubRepoUrl === repo.url))
+                              .map((repo) => (
+                                <SelectItem key={repo.id} value={repo.url}>
+                                  <div className="flex items-center gap-2">
+                                    <Github className="h-4 w-4" />
+                                    <span className="font-medium">{repo.fullName}</span>
+                                    {repo.private && (
+                                      <span className="text-xs text-muted-foreground">(Private)</span>
+                                    )}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {error && (
+                        <p className="text-xs text-destructive bg-destructive/10 p-2 rounded">
+                          {error}
+                        </p>
+                      )}
+                      {repos.length === 0 && !loadingRepos && !error && (
+                        <p className="text-xs text-muted-foreground">
+                          No repositories found. Try entering a URL manually.
+                        </p>
+                      )}
+                    </>
                   ) : (
-                    <Select value={selectedRepo} onValueChange={setSelectedRepo}>
-                      <SelectTrigger id="repoSelect">
-                        <SelectValue placeholder="Select a repository" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {repos
-                          .filter((repo) => !connectedRepos.some((cr) => cr.githubRepoUrl === repo.url))
-                          .map((repo) => (
-                            <SelectItem key={repo.id} value={repo.url}>
-                              <div className="flex items-center gap-2">
-                                <Github className="h-4 w-4" />
-                                <span className="font-medium">{repo.fullName}</span>
-                                {repo.private && (
-                                  <span className="text-xs text-muted-foreground">(Private)</span>
-                                )}
-                              </div>
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                  {repos.length === 0 && !loadingRepos && (
-                    <p className="text-xs text-muted-foreground">
-                      No repositories found. Create a new one instead.
-                    </p>
+                    <>
+                      <Label htmlFor="manualRepoUrl">Repository URL</Label>
+                      <Input
+                        id="manualRepoUrl"
+                        value={manualRepoUrl}
+                        onChange={(e) => setManualRepoUrl(e.target.value)}
+                        placeholder="https://github.com/owner/repo"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Enter the full GitHub repository URL
+                      </p>
+                    </>
                   )}
                 </div>
                 <Button
