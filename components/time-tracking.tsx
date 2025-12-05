@@ -220,7 +220,7 @@ export function TimeTracking({ issueId, currentUser }: TimeTrackingProps) {
                     {log.user && (
                       <Avatar className="h-5 w-5">
                         <AvatarImage src={log.user.avatar} />
-                        <AvatarFallback className="text-xs">{log.user.name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback className="text-xs">{log.user?.name?.charAt(0) || "U"}</AvatarFallback>
                       </Avatar>
                     )}
                     <span className="font-medium">{formatTime(log.timeSpent)}</span>

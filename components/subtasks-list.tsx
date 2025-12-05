@@ -288,7 +288,7 @@ export function SubtasksList({ issueId }: SubtasksListProps) {
                   >
                     {subtask.title}
                   </span>
-                  {subtask.assignee && (
+                  {subtask.assignee && subtask.assignee.name && (
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={subtask.assignee.avatar || "/placeholder.svg"} alt={subtask.assignee.name} />
                       <AvatarFallback className="text-xs">{subtask.assignee.name.charAt(0)}</AvatarFallback>

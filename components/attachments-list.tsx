@@ -130,7 +130,7 @@ export function AttachmentsList({ issueId, currentUser }: AttachmentsListProps) 
                             <Avatar className="h-4 w-4">
                               <AvatarImage src={attachment.user.avatar} />
                               <AvatarFallback className="text-xs">
-                                {attachment.user.name.charAt(0)}
+                                {attachment.user?.name?.charAt(0) || "U"}
                               </AvatarFallback>
                             </Avatar>
                             <span>{attachment.user.name}</span>

@@ -72,7 +72,7 @@ export function TeamDialog({ project, open, onOpenChange }: TeamDialogProps) {
                 <div key={member.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} />
-                    <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback>{member?.name?.charAt(0) || "U"}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{member.name}</p>

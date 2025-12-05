@@ -183,7 +183,7 @@ export function CreateIssueDialog({ projectId, trigger, onIssueCreated }: Create
                       <div className="flex items-center gap-2">
                         <Avatar className="h-5 w-5">
                           <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                          <AvatarFallback className="text-xs">{user.name.charAt(0)}</AvatarFallback>
+                          <AvatarFallback className="text-xs">{user?.name?.charAt(0) || "U"}</AvatarFallback>
                         </Avatar>
                         {user.name}
                       </div>

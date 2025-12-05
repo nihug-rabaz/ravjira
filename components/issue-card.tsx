@@ -38,7 +38,7 @@ export function IssueCard({ issue, onDragStart }: IssueCardProps) {
               {issue.assignee && issue.assignee.name && (
                 <Avatar className="h-5 w-5">
                   <AvatarImage src={issue.assignee.avatar || "/placeholder.svg"} alt={issue.assignee.name} />
-                  <AvatarFallback className="text-xs">{issue.assignee.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-xs">{issue.assignee?.name?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
               )}
             </div>

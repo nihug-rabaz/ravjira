@@ -305,7 +305,7 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
                   <div key={comment.id} className="flex gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={comment.user.avatar || "/placeholder.svg"} alt={comment.user.name} />
-                      <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback>{comment.user?.name?.charAt(0) || "U"}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center justify-between">
@@ -376,7 +376,7 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
                   <div className="flex gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={currentUser.avatar || "/placeholder.svg"} alt={currentUser.name} />
-                      <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback>{currentUser?.name?.charAt(0) || "U"}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 space-y-2">
                       <Textarea
@@ -507,7 +507,7 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
                           <div className="flex items-center gap-2">
                             <Avatar className="h-5 w-5">
                               <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                              <AvatarFallback className="text-xs">{user.name.charAt(0)}</AvatarFallback>
+                              <AvatarFallback className="text-xs">{user?.name?.charAt(0) || "U"}</AvatarFallback>
                             </Avatar>
                             {user.name}
                           </div>
@@ -523,7 +523,7 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
                   <div className="flex items-center gap-2 text-sm">
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={issue.reporter.avatar || "/placeholder.svg"} alt={issue.reporter.name} />
-                      <AvatarFallback className="text-xs">{issue.reporter.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="text-xs">{issue.reporter?.name?.charAt(0) || "U"}</AvatarFallback>
                     </Avatar>
                     <span>{issue.reporter.name}</span>
                   </div>

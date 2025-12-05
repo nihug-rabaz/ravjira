@@ -134,7 +134,7 @@ export function ReportsDashboard({ projectId }: ReportsDashboardProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
-                    {assignee.name.charAt(0)}
+                    {assignee?.name?.charAt(0) || "U"}
                   </div>
                   <div>
                     <div className="font-semibold">{assignee.name}</div>

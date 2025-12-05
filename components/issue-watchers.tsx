@@ -81,7 +81,7 @@ export function IssueWatchers({ issueId }: IssueWatchersProps) {
         {watchers.map((watcher) => (
           <Avatar key={watcher.id} className="h-6 w-6">
             <AvatarImage src={watcher.avatar || "/placeholder.svg"} alt={watcher.name} />
-            <AvatarFallback className="text-xs">{watcher.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback className="text-xs">{watcher?.name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
         ))}
       </div>
