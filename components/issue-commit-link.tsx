@@ -73,9 +73,7 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
     }
   }
 
-  if (!project.githubRepos || project.githubRepos.length === 0) {
-    return null
-  }
+  const hasGitHubRepo = project.githubRepos && project.githubRepos.length > 0
 
   return (
     <Card className="p-4 sm:p-6">
@@ -85,7 +83,7 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
             <Github className="h-4 w-4" />
             GitHub Commit
           </h3>
-          {!issue.commitId && (
+          {!issue.commitId && hasGitHubRepo && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -138,6 +136,12 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
             </Dialog>
           )}
         </div>
+
+        {!hasGitHubRepo && !issue.commitId && (
+          <div className="p-3 bg-muted rounded text-sm text-muted-foreground">
+            Connect a GitHub repository to the project to link commits to issues.
+          </div>
+        )}
 
         {issue.commitId && (
           <div className="space-y-2">

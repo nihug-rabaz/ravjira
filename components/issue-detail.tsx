@@ -350,6 +350,9 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
               <SubtasksList issueId={issue.id} key={issue.id} />
             </Card>
 
+            {/* GitHub Commit */}
+            <IssueCommitLink issue={issue} project={project} />
+
             {/* Attachments */}
             <Card className="p-4 sm:p-6">
               <AttachmentsList issueId={issue.id} currentUser={currentUser} />
