@@ -167,3 +167,4 @@ export function AttachmentsList({ issueId, currentUser }: AttachmentsListProps) 
 }
 
 
+

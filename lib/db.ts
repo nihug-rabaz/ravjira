@@ -1,5 +1,5 @@
 import { neon } from "@neondatabase/serverless"
-import type { Issue, Project, User, Comment } from "./types"
+import type { Issue, Project, User, Comment, Sprint, IssueLink, SavedFilter, CustomField, Release } from "./types"
 
 function getSql() {
   if (!process.env.DATABASE_URL) {
@@ -345,6 +345,7 @@ export async function getIssuesByProject(projectId: string): Promise<Issue[]> {
     projectId: i.project_id,
     assigneeId: i.assignee_id,
     reporterId: i.reporter_id,
+    epicId: i.epic_id,
     createdAt: i.created_at,
     updatedAt: i.updated_at,
   })) as Issue[]
@@ -371,6 +372,7 @@ export async function getIssue(id: string): Promise<Issue | null> {
     projectId: i.project_id,
     assigneeId: i.assignee_id,
     reporterId: i.reporter_id,
+    epicId: i.epic_id,
     createdAt: i.created_at,
     updatedAt: i.updated_at,
   } as Issue
@@ -381,7 +383,7 @@ export async function createIssue(issue: Omit<Issue, "id" | "createdAt" | "updat
   const id = `issue-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
   const result = await sql`
-    INSERT INTO issues (id, key, title, description, type, status, priority, project_id, assignee_id, reporter_id)
+    INSERT INTO issues (id, key, title, description, type, status, priority, project_id, assignee_id, reporter_id, epic_id)
     VALUES (
       ${id},
       ${issue.key},
@@ -392,7 +394,8 @@ export async function createIssue(issue: Omit<Issue, "id" | "createdAt" | "updat
       ${issue.priority},
       ${issue.projectId},
       ${issue.assigneeId || null},
-      ${issue.reporterId}
+      ${issue.reporterId},
+      ${(issue as any).epicId || null}
     )
     RETURNING *
   `
@@ -420,6 +423,9 @@ export async function updateIssue(id: string, updates: Partial<Issue>): Promise<
   }
   if (updates.assigneeId !== undefined) {
     await sql`UPDATE issues SET assignee_id = ${updates.assigneeId}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+  }
+  if ((updates as any).epicId !== undefined) {
+    await sql`UPDATE issues SET epic_id = ${(updates as any).epicId}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
   }
 
   return getIssue(id)
@@ -1061,4 +1067,441 @@ export async function getProjectMembers(projectId: string): Promise<User[]> {
     avatar: u.avatar,
     createdAt: u.created_at,
   })) as User[]
+}
+
+export async function getSprintsByProject(projectId: string): Promise<Sprint[]> {
+  const sql = getSql()
+  const sprints = await sql`
+    SELECT * FROM sprints
+    WHERE project_id = ${projectId}
+    ORDER BY start_date DESC, created_at DESC
+  `
+  return sprints.map((s: any) => ({
+    id: s.id,
+    projectId: s.project_id,
+    name: s.name,
+    goal: s.goal,
+    startDate: s.start_date,
+    endDate: s.end_date,
+    status: s.status,
+    createdAt: s.created_at,
+    updatedAt: s.updated_at,
+  })) as Sprint[]
+}
+
+export async function getSprint(id: string): Promise<Sprint | null> {
+  const sql = getSql()
+  const sprints = await sql`
+    SELECT * FROM sprints WHERE id = ${id}
+  `
+  if (sprints.length === 0) return null
+  const s = sprints[0]
+  return {
+    id: s.id,
+    projectId: s.project_id,
+    name: s.name,
+    goal: s.goal,
+    startDate: s.start_date,
+    endDate: s.end_date,
+    status: s.status,
+    createdAt: s.created_at,
+    updatedAt: s.updated_at,
+  } as Sprint
+}
+
+export async function createSprint(sprint: {
+  projectId: string
+  name: string
+  goal?: string
+  startDate?: string
+  endDate?: string
+  status?: "future" | "active" | "closed"
+}): Promise<Sprint> {
+  const sql = getSql()
+  const id = `sprint-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  await sql`
+    INSERT INTO sprints (id, project_id, name, goal, start_date, end_date, status)
+    VALUES (${id}, ${sprint.projectId}, ${sprint.name}, ${sprint.goal || null}, ${sprint.startDate || null}, ${sprint.endDate || null}, ${sprint.status || "future"})
+  `
+  return getSprint(id) as Promise<Sprint>
+}
+
+export async function updateSprint(id: string, updates: Partial<Sprint>): Promise<Sprint | null> {
+  const sql = getSql()
+  if (updates.name !== undefined) {
+    await sql`UPDATE sprints SET name = ${updates.name}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+  }
+  if (updates.goal !== undefined) {
+    await sql`UPDATE sprints SET goal = ${updates.goal}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+  }
+  if (updates.startDate !== undefined) {
+    await sql`UPDATE sprints SET start_date = ${updates.startDate || null}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+  }
+  if (updates.endDate !== undefined) {
+    await sql`UPDATE sprints SET end_date = ${updates.endDate || null}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+  }
+  if (updates.status !== undefined) {
+    await sql`UPDATE sprints SET status = ${updates.status}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+  }
+  return getSprint(id)
+}
+
+export async function deleteSprint(id: string): Promise<void> {
+  const sql = getSql()
+  await sql`DELETE FROM sprints WHERE id = ${id}`
+}
+
+export async function addIssueToSprint(issueId: string, sprintId: string): Promise<void> {
+  const sql = getSql()
+  await sql`
+    INSERT INTO issue_sprints (issue_id, sprint_id)
+    VALUES (${issueId}, ${sprintId})
+    ON CONFLICT (issue_id, sprint_id) DO NOTHING
+  `
+}
+
+export async function removeIssueFromSprint(issueId: string, sprintId: string): Promise<void> {
+  const sql = getSql()
+  await sql`
+    DELETE FROM issue_sprints
+    WHERE issue_id = ${issueId} AND sprint_id = ${sprintId}
+  `
+}
+
+export async function getIssuesBySprint(sprintId: string): Promise<Issue[]> {
+  const sql = getSql()
+  const issues = await sql`
+    SELECT 
+      i.*,
+      json_build_object('id', a.id, 'name', a.name, 'email', a.email, 'avatar', a.avatar) as assignee,
+      json_build_object('id', r.id, 'name', r.name, 'email', r.email, 'avatar', r.avatar) as reporter
+    FROM issues i
+    INNER JOIN issue_sprints isp ON i.id = isp.issue_id
+    LEFT JOIN users a ON i.assignee_id = a.id
+    LEFT JOIN users r ON i.reporter_id = r.id
+    WHERE isp.sprint_id = ${sprintId}
+    ORDER BY i.created_at DESC
+  `
+  return issues.map((i) => ({
+    ...i,
+    projectId: i.project_id,
+    assigneeId: i.assignee_id,
+    reporterId: i.reporter_id,
+    epicId: i.epic_id,
+    createdAt: i.created_at,
+    updatedAt: i.updated_at,
+  })) as Issue[]
+}
+
+export async function createIssueLink(link: {
+  sourceIssueId: string
+  targetIssueId: string
+  linkType: string
+}): Promise<IssueLink> {
+  const sql = getSql()
+  const id = `link-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  await sql`
+    INSERT INTO issue_links (id, source_issue_id, target_issue_id, link_type)
+    VALUES (${id}, ${link.sourceIssueId}, ${link.targetIssueId}, ${link.linkType})
+  `
+  const result = await sql`
+    SELECT * FROM issue_links WHERE id = ${id}
+  `
+  const l = result[0]
+  return {
+    id: l.id,
+    sourceIssueId: l.source_issue_id,
+    targetIssueId: l.target_issue_id,
+    linkType: l.link_type,
+    createdAt: l.created_at,
+  } as IssueLink
+}
+
+export async function getIssueLinks(issueId: string): Promise<IssueLink[]> {
+  const sql = getSql()
+  const links = await sql`
+    SELECT * FROM issue_links
+    WHERE source_issue_id = ${issueId} OR target_issue_id = ${issueId}
+    ORDER BY created_at DESC
+  `
+  return links.map((l: any) => ({
+    id: l.id,
+    sourceIssueId: l.source_issue_id,
+    targetIssueId: l.target_issue_id,
+    linkType: l.link_type,
+    createdAt: l.created_at,
+  })) as IssueLink[]
+}
+
+export async function deleteIssueLink(linkId: string): Promise<void> {
+  const sql = getSql()
+  await sql`DELETE FROM issue_links WHERE id = ${linkId}`
+}
+
+export async function addWatcher(issueId: string, userId: string): Promise<void> {
+  const sql = getSql()
+  await sql`
+    INSERT INTO issue_watchers (issue_id, user_id)
+    VALUES (${issueId}, ${userId})
+    ON CONFLICT (issue_id, user_id) DO NOTHING
+  `
+}
+
+export async function removeWatcher(issueId: string, userId: string): Promise<void> {
+  const sql = getSql()
+  await sql`
+    DELETE FROM issue_watchers
+    WHERE issue_id = ${issueId} AND user_id = ${userId}
+  `
+}
+
+export async function getWatchers(issueId: string): Promise<User[]> {
+  const sql = getSql()
+  const watchers = await sql`
+    SELECT u.* FROM users u
+    INNER JOIN issue_watchers iw ON u.id = iw.user_id
+    WHERE iw.issue_id = ${issueId}
+    ORDER BY u.name ASC
+  `
+  return watchers.map((u: any) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    avatar: u.avatar,
+    createdAt: u.created_at,
+  })) as User[]
+}
+
+export async function createSavedFilter(filter: {
+  userId: string
+  projectId?: string
+  name: string
+  description?: string
+  filterData: any
+  isShared?: boolean
+}): Promise<SavedFilter> {
+  const sql = getSql()
+  const id = `filter-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  await sql`
+    INSERT INTO saved_filters (id, user_id, project_id, name, description, filter_data, is_shared)
+    VALUES (${id}, ${filter.userId}, ${filter.projectId || null}, ${filter.name}, ${filter.description || null}, ${JSON.stringify(filter.filterData)}, ${filter.isShared || false})
+  `
+  const result = await sql`
+    SELECT * FROM saved_filters WHERE id = ${id}
+  `
+  const f = result[0]
+  return {
+    id: f.id,
+    userId: f.user_id,
+    projectId: f.project_id,
+    name: f.name,
+    description: f.description,
+    filterData: typeof f.filter_data === 'string' ? JSON.parse(f.filter_data) : f.filter_data,
+    isShared: f.is_shared,
+    createdAt: f.created_at,
+    updatedAt: f.updated_at,
+  } as SavedFilter
+}
+
+export async function getSavedFilters(userId: string, projectId?: string): Promise<SavedFilter[]> {
+  const sql = getSql()
+  const filters = projectId
+    ? await sql`
+        SELECT * FROM saved_filters
+        WHERE user_id = ${userId} AND (project_id = ${projectId} OR is_shared = TRUE)
+        ORDER BY created_at DESC
+      `
+    : await sql`
+        SELECT * FROM saved_filters
+        WHERE user_id = ${userId} OR is_shared = TRUE
+        ORDER BY created_at DESC
+      `
+  return filters.map((f: any) => ({
+    id: f.id,
+    userId: f.user_id,
+    projectId: f.project_id,
+    name: f.name,
+    description: f.description,
+    filterData: typeof f.filter_data === 'string' ? JSON.parse(f.filter_data) : f.filter_data,
+    isShared: f.is_shared,
+    createdAt: f.created_at,
+    updatedAt: f.updated_at,
+  })) as SavedFilter[]
+}
+
+export async function deleteSavedFilter(filterId: string): Promise<void> {
+  const sql = getSql()
+  await sql`DELETE FROM saved_filters WHERE id = ${filterId}`
+}
+
+export async function getCustomFields(projectId: string): Promise<CustomField[]> {
+  const sql = getSql()
+  const fields = await sql`
+    SELECT * FROM custom_fields
+    WHERE project_id = ${projectId}
+    ORDER BY created_at ASC
+  `
+  return fields.map((f: any) => ({
+    id: f.id,
+    projectId: f.project_id,
+    name: f.name,
+    fieldType: f.field_type,
+    options: typeof f.options === 'string' ? JSON.parse(f.options) : f.options,
+    isRequired: f.is_required,
+    createdAt: f.created_at,
+  })) as CustomField[]
+}
+
+export async function createCustomField(field: {
+  projectId: string
+  name: string
+  fieldType: string
+  options?: any
+  isRequired?: boolean
+}): Promise<CustomField> {
+  const sql = getSql()
+  const id = `field-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  await sql`
+    INSERT INTO custom_fields (id, project_id, name, field_type, options, is_required)
+    VALUES (${id}, ${field.projectId}, ${field.name}, ${field.fieldType}, ${field.options ? JSON.stringify(field.options) : null}, ${field.isRequired || false})
+  `
+  const result = await sql`
+    SELECT * FROM custom_fields WHERE id = ${id}
+  `
+  const f = result[0]
+  return {
+    id: f.id,
+    projectId: f.project_id,
+    name: f.name,
+    fieldType: f.field_type,
+    options: typeof f.options === 'string' ? JSON.parse(f.options) : f.options,
+    isRequired: f.is_required,
+    createdAt: f.created_at,
+  } as CustomField
+}
+
+export async function getIssueCustomFieldValues(issueId: string): Promise<any[]> {
+  const sql = getSql()
+  const values = await sql`
+    SELECT icfv.*, cf.name as field_name, cf.field_type, cf.options
+    FROM issue_custom_field_values icfv
+    INNER JOIN custom_fields cf ON icfv.custom_field_id = cf.id
+    WHERE icfv.issue_id = ${issueId}
+  `
+  return values.map((v: any) => ({
+    issueId: v.issue_id,
+    customFieldId: v.custom_field_id,
+    fieldName: v.field_name,
+    fieldType: v.field_type,
+    options: typeof v.options === 'string' ? JSON.parse(v.options) : v.options,
+    value: v.value,
+    createdAt: v.created_at,
+    updatedAt: v.updated_at,
+  }))
+}
+
+export async function setIssueCustomFieldValue(issueId: string, customFieldId: string, value: string): Promise<void> {
+  const sql = getSql()
+  await sql`
+    INSERT INTO issue_custom_field_values (issue_id, custom_field_id, value, updated_at)
+    VALUES (${issueId}, ${customFieldId}, ${value || null}, CURRENT_TIMESTAMP)
+    ON CONFLICT (issue_id, custom_field_id) 
+    DO UPDATE SET value = ${value || null}, updated_at = CURRENT_TIMESTAMP
+  `
+}
+
+export async function getReleasesByProject(projectId: string): Promise<Release[]> {
+  const sql = getSql()
+  const releases = await sql`
+    SELECT * FROM releases
+    WHERE project_id = ${projectId}
+    ORDER BY release_date DESC, created_at DESC
+  `
+  return releases.map((r: any) => ({
+    id: r.id,
+    projectId: r.project_id,
+    name: r.name,
+    version: r.version,
+    description: r.description,
+    releaseDate: r.release_date,
+    status: r.status,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  })) as Release[]
+}
+
+export async function createRelease(release: {
+  projectId: string
+  name: string
+  version?: string
+  description?: string
+  releaseDate?: string
+  status?: "unreleased" | "released" | "archived"
+}): Promise<Release> {
+  const sql = getSql()
+  const id = `release-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  await sql`
+    INSERT INTO releases (id, project_id, name, version, description, release_date, status)
+    VALUES (${id}, ${release.projectId}, ${release.name}, ${release.version || null}, ${release.description || null}, ${release.releaseDate || null}, ${release.status || "unreleased"})
+  `
+  const result = await sql`
+    SELECT * FROM releases WHERE id = ${id}
+  `
+  const r = result[0]
+  return {
+    id: r.id,
+    projectId: r.project_id,
+    name: r.name,
+    version: r.version,
+    description: r.description,
+    releaseDate: r.release_date,
+    status: r.status,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  } as Release
+}
+
+export async function addIssueToRelease(issueId: string, releaseId: string, fixVersion: boolean = false): Promise<void> {
+  const sql = getSql()
+  await sql`
+    INSERT INTO issue_releases (issue_id, release_id, fix_version)
+    VALUES (${issueId}, ${releaseId}, ${fixVersion})
+    ON CONFLICT (issue_id, release_id) 
+    DO UPDATE SET fix_version = ${fixVersion}
+  `
+}
+
+export async function getIssueVotes(issueId: string): Promise<number> {
+  const sql = getSql()
+  const result = await sql`
+    SELECT COUNT(*) as count FROM issue_votes WHERE issue_id = ${issueId}
+  `
+  return parseInt(result[0].count) || 0
+}
+
+export async function hasUserVoted(issueId: string, userId: string): Promise<boolean> {
+  const sql = getSql()
+  const result = await sql`
+    SELECT COUNT(*) as count FROM issue_votes
+    WHERE issue_id = ${issueId} AND user_id = ${userId}
+  `
+  return parseInt(result[0].count) > 0
+}
+
+export async function toggleVote(issueId: string, userId: string): Promise<boolean> {
+  const sql = getSql()
+  const hasVoted = await hasUserVoted(issueId, userId)
+  if (hasVoted) {
+    await sql`
+      DELETE FROM issue_votes
+      WHERE issue_id = ${issueId} AND user_id = ${userId}
+    `
+    return false
+  } else {
+    await sql`
+      INSERT INTO issue_votes (issue_id, user_id)
+      VALUES (${issueId}, ${userId})
+    `
+    return true
+  }
 }

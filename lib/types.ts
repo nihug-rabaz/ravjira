@@ -20,6 +20,7 @@ export interface Issue {
   assignee?: User
   reporter: User
   projectId: string
+  epicId?: string
   createdAt: string
   updatedAt: string
   comments: Comment[]
@@ -153,4 +154,76 @@ export interface Request {
   projectId?: string
   createdAt: string
   updatedAt: string
+}
+
+export interface Sprint {
+  id: string
+  projectId: string
+  name: string
+  goal?: string
+  startDate?: string
+  endDate?: string
+  status: "future" | "active" | "closed"
+  createdAt: string
+  updatedAt: string
+}
+
+export type IssueLinkType = "relates" | "blocks" | "is blocked by" | "duplicates" | "is duplicated by" | "depends on" | "is depended on by"
+
+export interface IssueLink {
+  id: string
+  sourceIssueId: string
+  targetIssueId: string
+  linkType: IssueLinkType
+  createdAt: string
+}
+
+export interface SavedFilter {
+  id: string
+  userId: string
+  projectId?: string
+  name: string
+  description?: string
+  filterData: any
+  isShared: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type CustomFieldType = "text" | "number" | "date" | "select" | "user" | "checkbox"
+
+export interface CustomField {
+  id: string
+  projectId: string
+  name: string
+  fieldType: CustomFieldType
+  options?: any
+  isRequired: boolean
+  createdAt: string
+}
+
+export interface IssueCustomFieldValue {
+  issueId: string
+  customFieldId: string
+  value?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Release {
+  id: string
+  projectId: string
+  name: string
+  version?: string
+  description?: string
+  releaseDate?: string
+  status: "unreleased" | "released" | "archived"
+  createdAt: string
+  updatedAt: string
+}
+
+export interface IssueRelease {
+  issueId: string
+  releaseId: string
+  fixVersion: boolean
 }

@@ -13,3 +13,4 @@ CREATE INDEX IF NOT EXISTS idx_attachments_issue_id ON attachments(issue_id);
 CREATE INDEX IF NOT EXISTS idx_attachments_user_id ON attachments(user_id);
 
 
+

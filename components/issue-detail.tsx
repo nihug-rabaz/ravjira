@@ -18,6 +18,9 @@ import { ChevronLeft, Trash2, Send, Edit2, X, Tag, History, Github } from "lucid
 import { AttachmentsList } from "@/components/attachments-list"
 import { SubtasksList } from "@/components/subtasks-list"
 import { TimeTracking } from "@/components/time-tracking"
+import { IssueLinks } from "@/components/issue-links"
+import { IssueWatchers } from "@/components/issue-watchers"
+import { IssueVoting } from "@/components/issue-voting"
 
 interface IssueDetailProps {
   issue: Issue
@@ -588,6 +591,17 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
                 ))}
               </div>
             )}
+
+            {/* Voting */}
+            <IssueVoting issueId={issue.id} />
+
+            {/* Watchers */}
+            <IssueWatchers issueId={issue.id} />
+
+            {/* Links */}
+            <Card className="p-4 sm:p-6">
+              <IssueLinks issueId={issue.id} />
+            </Card>
 
             {/* Delete Button */}
             <Button variant="destructive" className="w-full" onClick={handleDelete}>

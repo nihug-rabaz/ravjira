@@ -20,3 +20,4 @@ CREATE INDEX IF NOT EXISTS idx_time_logs_issue_id ON time_logs(issue_id);
 CREATE INDEX IF NOT EXISTS idx_time_logs_user_id ON time_logs(user_id);
 
 
+

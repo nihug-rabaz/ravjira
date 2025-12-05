@@ -19,3 +19,4 @@ CREATE INDEX IF NOT EXISTS idx_requests_platform ON requests(platform);
 CREATE INDEX IF NOT EXISTS idx_requests_created_at ON requests(created_at);
 
 
+
