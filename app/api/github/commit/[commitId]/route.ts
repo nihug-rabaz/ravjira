@@ -16,9 +16,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ comm
       return NextResponse.json({ error: "GitHub token is required" }, { status: 400 })
     }
 
+    const authHeader = token.startsWith("ghp_") || token.startsWith("github_pat_")
+      ? `token ${token}`
+      : `Bearer ${token}`
+
     const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits/${commitId}`, {
       headers: {
-        "Authorization": `Bearer ${token}`,
+        "Authorization": authHeader,
         "Accept": "application/vnd.github.v3+json",
       },
     })
