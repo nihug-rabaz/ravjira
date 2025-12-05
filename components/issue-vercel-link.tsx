@@ -276,28 +276,6 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
                   </div>
                 )}
 
-                {deploymentInfo.domains && deploymentInfo.domains.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">Domains</span>
-                    </div>
-                    <div className="space-y-1">
-                      {deploymentInfo.domains.map((domain: string, idx: number) => (
-                        <div key={idx} className="p-2 bg-muted rounded text-xs font-mono">
-                          <a
-                            href={`https://${domain}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline break-all"
-                          >
-                            {domain}
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 {manualUrls.length > 0 && (
                   <div className="space-y-2">
