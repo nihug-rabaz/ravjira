@@ -45,17 +45,27 @@ export async function GET(
       deployments = deploymentsData.deployments || []
     }
 
-    // Get domains for the project
-    const domainsUrl = teamId
-      ? `https://api.vercel.com/v5/domains?projectId=${projectId}&teamId=${teamId}`
-      : `https://api.vercel.com/v5/domains?projectId=${projectId}`
-
-    const domainsRes = await fetch(domainsUrl, { headers })
-    
+    // Get domains for the project - use v9 projects endpoint which includes domains
     let domains: string[] = []
-    if (domainsRes.ok) {
-      const domainsData = await domainsRes.json()
-      domains = domainsData.domains?.map((d: any) => d.name) || []
+    if (project.domains && Array.isArray(project.domains)) {
+      domains = project.domains
+    } else if (project.link?.domain) {
+      domains = [project.link.domain]
+    }
+    
+    // Also try to get domains from the project configuration
+    if (domains.length === 0) {
+      const projectConfigUrl = teamId
+        ? `https://api.vercel.com/v9/projects/${projectId}/domains?teamId=${teamId}`
+        : `https://api.vercel.com/v9/projects/${projectId}/domains`
+      
+      const domainsRes = await fetch(projectConfigUrl, { headers })
+      if (domainsRes.ok) {
+        const domainsData = await domainsRes.json()
+        if (domainsData.domains && Array.isArray(domainsData.domains)) {
+          domains = domainsData.domains.map((d: any) => typeof d === 'string' ? d : d.name || d.domain).filter(Boolean)
+        }
+      }
     }
 
     // Format deployments with their URLs
