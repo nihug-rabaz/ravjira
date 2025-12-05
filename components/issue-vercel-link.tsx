@@ -86,6 +86,17 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
     }
   }
 
+  const handleAddManualUrl = () => {
+    if (manualUrl.trim()) {
+      const newUrls = [...manualUrls, manualUrl.trim()]
+      setManualUrls(newUrls)
+      // Save to localStorage
+      localStorage.setItem(`vercel-urls-${issue.id}-${selectedVercelId || 'default'}`, JSON.stringify(newUrls))
+      setOpenManualUrlDialog(false)
+      setManualUrl("")
+    }
+  }
+
   const hasVercelProjects = project.vercelProjects && project.vercelProjects.length > 0
 
   return (
@@ -404,16 +415,5 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
       </Dialog>
     </Card>
   )
-
-  function handleAddManualUrl() {
-    if (manualUrl.trim()) {
-      const newUrls = [...manualUrls, manualUrl.trim()]
-      setManualUrls(newUrls)
-      // Save to localStorage
-      localStorage.setItem(`vercel-urls-${issue.id}-${selectedVercelId || 'default'}`, JSON.stringify(newUrls))
-      setOpenManualUrlDialog(false)
-      setManualUrl("")
-    }
-  }
 }
 
