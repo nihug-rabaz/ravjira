@@ -11,6 +11,7 @@ import { ProjectSettingsMenu } from "@/components/project-settings-menu"
 import { NotificationsBell } from "@/components/notifications-bell"
 import { TeamDialog } from "@/components/team-dialog"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { GitHubIntegrationDialog } from "@/components/github-integration-dialog"
 
 interface ProjectHeaderProps {
   project: Project
@@ -18,6 +19,8 @@ interface ProjectHeaderProps {
 }
 
 export function ProjectHeader({ project, user }: ProjectHeaderProps) {
+  const [githubOpen, setGithubOpen] = useState(false)
+
   return (
     <>
       <header className="border-b bg-background">
@@ -90,11 +93,22 @@ export function ProjectHeader({ project, user }: ProjectHeaderProps) {
             </div>
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               <LanguageSwitcher />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setGithubOpen(true)}
+                className="hidden sm:flex"
+                title="GitHub Integration"
+              >
+                <Github className="h-4 w-4 sm:mr-2" />
+                <span className="hidden md:inline">GitHub</span>
+              </Button>
               <NotificationsBell />
               <TeamDialogButton project={project} />
               <ProjectSettingsMenu project={project} />
               {user && <UserMenu user={user} />}
             </div>
+            <GitHubIntegrationDialog project={project} open={githubOpen} onOpenChange={setGithubOpen} />
           </div>
         </div>
       </header>
