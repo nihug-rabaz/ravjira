@@ -7,7 +7,8 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Github, ExternalLink, Code, Plus } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Github, ExternalLink, Code, Plus, Settings } from "lucide-react"
 import { useLanguage } from "@/hooks/use-language"
 
 interface IssueCommitLinkProps {
@@ -20,14 +21,17 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
   const [commitId, setCommitId] = useState(issue.commitId || "")
   const [commitInfo, setCommitInfo] = useState<any>(null)
   const [open, setOpen] = useState(false)
+  const [openRepoSelect, setOpenRepoSelect] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [selectedRepoId, setSelectedRepoId] = useState<string>(issue.githubRepoId || project.githubRepos?.[0]?.id || "")
 
-  const fetchCommitInfo = async (commitId: string) => {
-    if (!commitId || !project.githubRepos || project.githubRepos.length === 0) return
+  const selectedRepo = project.githubRepos?.find(r => r.id === selectedRepoId) || project.githubRepos?.[0]
+
+  const fetchCommitInfo = async (commitId: string, repo?: typeof selectedRepo) => {
+    if (!commitId || !repo) return
 
     setLoading(true)
     try {
-      const repo = project.githubRepos[0]
       const res = await fetch(
         `/api/github/commit/${commitId}?owner=${repo.githubOwner}&repo=${repo.githubRepo}`
       )
@@ -43,21 +47,22 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
   }
 
   useEffect(() => {
-    if (issue.commitId) {
-      fetchCommitInfo(issue.commitId)
+    if (issue.commitId && selectedRepo) {
+      fetchCommitInfo(issue.commitId, selectedRepo)
     }
-  }, [issue.commitId])
+  }, [issue.commitId, selectedRepoId])
 
   const handleLinkCommit = async () => {
-    if (!commitId.trim()) return
+    if (!commitId.trim() || !selectedRepo) return
 
     try {
       const res = await fetch(`/api/issues/${issue.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          githubRepoId: selectedRepoId,
           commitId: commitId.trim(),
-          commitUrl: commitInfo?.url || `https://github.com/${project.githubRepos?.[0]?.githubOwner}/${project.githubRepos?.[0]?.githubRepo}/commit/${commitId}`,
+          commitUrl: commitInfo?.url || `https://github.com/${selectedRepo.githubOwner}/${selectedRepo.githubRepo}/commit/${commitId.trim()}`,
           commitMessage: commitInfo?.message || "",
           commitAuthor: commitInfo?.author || "",
           commitDate: commitInfo?.date || new Date().toISOString(),
@@ -73,6 +78,21 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
     }
   }
 
+  const handleRepoChange = async (repoId: string) => {
+    setSelectedRepoId(repoId)
+    const repo = project.githubRepos?.find(r => r.id === repoId)
+    if (repoId && repo) {
+      const res = await fetch(`/api/issues/${issue.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ githubRepoId: repoId }),
+      })
+      if (res.ok) {
+        window.location.reload()
+      }
+    }
+  }
+
   const hasGitHubRepo = project.githubRepos && project.githubRepos.length > 0
 
   return (
@@ -83,6 +103,20 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
             <Github className="h-4 w-4" />
             GitHub Commit
           </h3>
+          {hasGitHubRepo && project.githubRepos && project.githubRepos.length > 1 && (
+            <Select value={selectedRepoId} onValueChange={handleRepoChange}>
+              <SelectTrigger className="w-[200px] h-8">
+                <SelectValue placeholder="Select Repository" />
+              </SelectTrigger>
+              <SelectContent>
+                {project.githubRepos.map((repo) => (
+                  <SelectItem key={repo.id} value={repo.id}>
+                    {repo.githubOwner}/{repo.githubRepo}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           {!issue.commitId && hasGitHubRepo && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
@@ -96,6 +130,23 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
                   <DialogTitle>Link GitHub Commit</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
+                  {project.githubRepos && project.githubRepos.length > 1 && (
+                    <div>
+                      <Label htmlFor="repoSelect">Repository</Label>
+                      <Select value={selectedRepoId} onValueChange={setSelectedRepoId}>
+                        <SelectTrigger id="repoSelect">
+                          <SelectValue placeholder="Select Repository" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {project.githubRepos.map((repo) => (
+                            <SelectItem key={repo.id} value={repo.id}>
+                              {repo.githubOwner}/{repo.githubRepo}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <div>
                     <Label htmlFor="commitId">Commit ID</Label>
                     <Input
@@ -103,8 +154,8 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
                       value={commitId}
                       onChange={(e) => {
                         setCommitId(e.target.value)
-                        if (e.target.value.length >= 7) {
-                          fetchCommitInfo(e.target.value)
+                        if (e.target.value.length >= 7 && selectedRepo) {
+                          fetchCommitInfo(e.target.value, selectedRepo)
                         }
                       }}
                       placeholder="d19e34a"
@@ -145,9 +196,14 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
 
         {issue.commitId && (
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Code className="h-4 w-4 text-muted-foreground" />
               <span className="font-mono text-sm">{issue.commitId.substring(0, 7)}</span>
+              {selectedRepo && (
+                <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded">
+                  {selectedRepo.githubOwner}/{selectedRepo.githubRepo}
+                </span>
+              )}
               {issue.commitUrl && (
                 <a
                   href={issue.commitUrl}

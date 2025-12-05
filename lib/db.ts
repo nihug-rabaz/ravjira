@@ -346,6 +346,7 @@ export async function getIssuesByProject(projectId: string): Promise<Issue[]> {
     assigneeId: i.assignee_id,
     reporterId: i.reporter_id,
     epicId: i.epic_id,
+    githubRepoId: i.github_repo_id,
     commitId: i.commit_id,
     commitMessage: i.commit_message,
     commitUrl: i.commit_url,
@@ -451,6 +452,9 @@ export async function updateIssue(id: string, updates: Partial<Issue>): Promise<
   }
   if ((updates as any).commitDate !== undefined) {
     await sql`UPDATE issues SET commit_date = ${(updates as any).commitDate || null}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+  }
+  if ((updates as any).githubRepoId !== undefined) {
+    await sql`UPDATE issues SET github_repo_id = ${(updates as any).githubRepoId || null}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
   }
 
   return getIssue(id)
@@ -1257,6 +1261,7 @@ export async function getIssuesBySprint(sprintId: string): Promise<Issue[]> {
     assigneeId: i.assignee_id,
     reporterId: i.reporter_id,
     epicId: i.epic_id,
+    githubRepoId: i.github_repo_id,
     commitId: i.commit_id,
     commitMessage: i.commit_message,
     commitUrl: i.commit_url,

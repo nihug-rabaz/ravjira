@@ -21,6 +21,7 @@ export interface Issue {
   reporter: User
   projectId: string
   epicId?: string
+  githubRepoId?: string
   commitId?: string
   commitMessage?: string
   commitUrl?: string
