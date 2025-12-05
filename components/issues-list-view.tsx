@@ -165,23 +165,23 @@ export function IssuesListView({ project, initialIssues }: IssuesListViewProps) 
                       )}
                     </div>
                   </Link>
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <PriorityIcon priority={issue.priority} />
-                    {issue.assignee && issue.assignee.name && (
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={issue.assignee.avatar || "/placeholder.svg"} alt={issue.assignee.name} />
-                        <AvatarFallback className="text-xs">
-                          {issue.assignee.name ? issue.assignee.name[0] : ""}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                    <span className="text-xs text-muted-foreground capitalize px-2 py-1 rounded bg-muted">
-                      {issue.status.replace("-", " ")}
-                    </span>
-                  </div>
                 </div>
-              </Card>
-            </Link>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <PriorityIcon priority={issue.priority} />
+                  {issue.assignee && issue.assignee.name && (
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={issue.assignee.avatar || "/placeholder.svg"} alt={issue.assignee.name} />
+                      <AvatarFallback className="text-xs">
+                        {issue.assignee.name ? issue.assignee.name[0] : ""}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  <span className="text-xs text-muted-foreground capitalize px-2 py-1 rounded bg-muted">
+                    {issue.status.replace("-", " ")}
+                  </span>
+                </div>
+              </div>
+            </Card>
           ))
         )}
       </div>
