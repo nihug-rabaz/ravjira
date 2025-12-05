@@ -108,8 +108,13 @@ export async function GET(
         name: project.name,
         url: project.link?.url || `https://${project.name}.vercel.app`,
       },
-      deployments: formattedDeployments,
-      domains: domains,
+      latestDeployment: latestDeployment ? {
+        id: latestDeployment.uid,
+        url: latestDeployment.url,
+        state: latestDeployment.state,
+        createdAt: latestDeployment.createdAt,
+      } : null,
+      domains: domains.length > 0 ? domains : null,
     })
   } catch (error) {
     console.error("[v0] Error fetching Vercel deployments:", error)

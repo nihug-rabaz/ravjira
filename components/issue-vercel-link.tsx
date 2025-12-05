@@ -18,6 +18,8 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
   const { t } = useLanguage()
   const [selectedVercelId, setSelectedVercelId] = useState<string>(issue.vercelProjectId || "")
   const [openVercelDialog, setOpenVercelDialog] = useState(false)
+  const [openManualUrlDialog, setOpenManualUrlDialog] = useState(false)
+  const [manualUrl, setManualUrl] = useState<string>("")
   const [deploymentInfo, setDeploymentInfo] = useState<any>(null)
   const [loadingDeployment, setLoadingDeployment] = useState(false)
 
@@ -120,25 +122,32 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
               <div className="text-xs text-muted-foreground">Loading deployment info...</div>
             ) : deploymentInfo ? (
               <>
-                {deploymentInfo.deployments && deploymentInfo.deployments.length > 0 && (
+                {deploymentInfo.latestDeployment && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">Deployments</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase">Deployment</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setOpenManualUrlDialog(true)}
+                        className="h-6 text-xs"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add URL
+                      </Button>
                     </div>
-                    <div className="space-y-1 max-h-60 overflow-y-auto">
-                      {deploymentInfo.deployments.map((deployment: any, idx: number) => (
-                        <div key={deployment.id || idx} className="p-2 bg-muted rounded text-xs font-mono">
-                          <a
-                            href={`https://${deployment.url}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline break-all"
-                          >
-                            {deployment.url}
-                          </a>
-                        </div>
-                      ))}
+                    <div className="p-2 bg-muted rounded text-xs font-mono">
+                      <a
+                        href={`https://${deploymentInfo.latestDeployment.url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline break-all"
+                      >
+                        {deploymentInfo.latestDeployment.url}
+                      </a>
                     </div>
                   </div>
                 )}
@@ -166,9 +175,23 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
                   </div>
                 )}
 
-                {(!deploymentInfo.deployments || deploymentInfo.deployments.length === 0) && (!deploymentInfo.domains || deploymentInfo.domains.length === 0) && (
-                  <div className="p-2 bg-muted rounded text-xs text-muted-foreground">
-                    No deployment information available
+                {!deploymentInfo.latestDeployment && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase">Deployment</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setOpenManualUrlDialog(true)}
+                        className="h-6 text-xs"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add URL
+                      </Button>
+                    </div>
+                    <div className="p-2 bg-muted rounded text-xs text-muted-foreground">
+                      No deployment information available. Add a URL manually.
+                    </div>
                   </div>
                 )}
               </>
@@ -196,25 +219,32 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
               <div className="text-xs text-muted-foreground">Loading deployment info...</div>
             ) : deploymentInfo ? (
               <>
-                {deploymentInfo.deployments && deploymentInfo.deployments.length > 0 && (
+                {deploymentInfo.latestDeployment && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">Deployments</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase">Deployment</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setOpenManualUrlDialog(true)}
+                        className="h-6 text-xs"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add URL
+                      </Button>
                     </div>
-                    <div className="space-y-1 max-h-60 overflow-y-auto">
-                      {deploymentInfo.deployments.map((deployment: any, idx: number) => (
-                        <div key={deployment.id || idx} className="p-2 bg-muted rounded text-xs font-mono">
-                          <a
-                            href={`https://${deployment.url}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline break-all"
-                          >
-                            {deployment.url}
-                          </a>
-                        </div>
-                      ))}
+                    <div className="p-2 bg-muted rounded text-xs font-mono">
+                      <a
+                        href={`https://${deploymentInfo.latestDeployment.url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline break-all"
+                      >
+                        {deploymentInfo.latestDeployment.url}
+                      </a>
                     </div>
                   </div>
                 )}
@@ -242,9 +272,46 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
                   </div>
                 )}
 
-                {(!deploymentInfo.deployments || deploymentInfo.deployments.length === 0) && (!deploymentInfo.domains || deploymentInfo.domains.length === 0) && (
-                  <div className="p-2 bg-muted rounded text-xs text-muted-foreground">
-                    No deployment information available
+                {deploymentInfo.manualUrls && deploymentInfo.manualUrls.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs font-semibold text-muted-foreground uppercase">Additional URLs</span>
+                    </div>
+                    <div className="space-y-1">
+                      {deploymentInfo.manualUrls.map((url: string, idx: number) => (
+                        <div key={idx} className="p-2 bg-muted rounded text-xs font-mono flex items-center justify-between">
+                          <a
+                            href={`https://${url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline break-all flex-1"
+                          >
+                            {url}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {!deploymentInfo.latestDeployment && !deploymentInfo.manualUrls?.length && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase">Deployment</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setOpenManualUrlDialog(true)}
+                        className="h-6 text-xs"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add URL
+                      </Button>
+                    </div>
+                    <div className="p-2 bg-muted rounded text-xs text-muted-foreground">
+                      No deployment information available. Add a URL manually.
+                    </div>
                   </div>
                 )}
               </>
