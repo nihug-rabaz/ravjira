@@ -32,75 +32,32 @@ export async function GET(
 
     const project = await projectRes.json()
 
-    // Get all deployments
+    // Get latest deployment only
     const deploymentsUrl = teamId
-      ? `https://api.vercel.com/v6/deployments?projectId=${projectId}&teamId=${teamId}&limit=20`
-      : `https://api.vercel.com/v6/deployments?projectId=${projectId}&limit=20`
+      ? `https://api.vercel.com/v6/deployments?projectId=${projectId}&teamId=${teamId}&limit=1`
+      : `https://api.vercel.com/v6/deployments?projectId=${projectId}&limit=1`
 
     const deploymentsRes = await fetch(deploymentsUrl, { headers })
     
-    let deployments: any[] = []
+    let latestDeployment: any = null
     if (deploymentsRes.ok) {
       const deploymentsData = await deploymentsRes.json()
-      deployments = deploymentsData.deployments || []
+      if (deploymentsData.deployments && deploymentsData.deployments.length > 0) {
+        latestDeployment = deploymentsData.deployments[0]
+      }
     }
 
-    // Get domains for the project - use the latest deployment's alias which contains the actual domains
+    // Get domains from the latest deployment's alias (only custom domains, not vercel.app URLs)
     let domains: string[] = []
-    
-    // Get domains from the latest deployment's alias (these are the actual custom domains)
-    if (deployments.length > 0) {
-      const latestDeployment = deployments[0]
-      if (latestDeployment.alias && Array.isArray(latestDeployment.alias)) {
-        // Filter out vercel.app URLs and keep only custom domains
-        domains = latestDeployment.alias
-          .filter((alias: string) => {
-            // Exclude vercel.app preview URLs, keep only custom domains
-            return !alias.includes('.vercel.app') && !alias.includes('vercel.app')
-          })
-          .filter(Boolean)
-      }
+    if (latestDeployment && latestDeployment.alias && Array.isArray(latestDeployment.alias)) {
+      // Filter out vercel.app URLs and keep only custom domains
+      domains = latestDeployment.alias
+        .filter((alias: string) => {
+          // Exclude vercel.app preview URLs, keep only custom domains
+          return !alias.includes('.vercel.app') && !alias.includes('vercel.app')
+        })
+        .filter(Boolean)
     }
-    
-    // Also try to get domains from project configuration
-    if (domains.length === 0) {
-      const domainsUrl = teamId
-        ? `https://api.vercel.com/v5/domains?projectId=${projectId}&teamId=${teamId}`
-        : `https://api.vercel.com/v5/domains?projectId=${projectId}`
-
-      const domainsRes = await fetch(domainsUrl, { headers })
-      
-      if (domainsRes.ok) {
-        const domainsData = await domainsRes.json()
-        if (domainsData.domains && Array.isArray(domainsData.domains)) {
-          // Filter domains that belong to this specific project
-          const projectDomains = domainsData.domains
-            .filter((d: any) => {
-              // Only include domains that are linked to this project
-              const domainProjectId = typeof d === 'object' ? (d.projectId || d.project?.id) : null
-              return domainProjectId === projectId || domainProjectId === project.id
-            })
-            .map((d: any) => typeof d === 'string' ? d : (d.name || d.domain))
-            .filter(Boolean)
-          
-          domains = [...new Set([...domains, ...projectDomains])]
-        }
-      }
-    }
-    
-    // Also check project object for domains
-    if (project.domains && Array.isArray(project.domains)) {
-      domains = [...new Set([...domains, ...project.domains])]
-    }
-
-    // Format deployments with their URLs
-    const formattedDeployments = deployments.map((deployment: any) => ({
-      id: deployment.uid,
-      url: deployment.url,
-      state: deployment.state,
-      createdAt: deployment.createdAt,
-      alias: deployment.alias || [],
-    }))
 
     return NextResponse.json({
       project: {

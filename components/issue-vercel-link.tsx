@@ -8,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Zap, ExternalLink, Plus, Globe } from "lucide-react"
 import { useLanguage } from "@/hooks/use-language"
 import { VercelIntegrationDialog } from "@/components/vercel-integration-dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface IssueVercelLinkProps {
   issue: Issue
@@ -22,8 +25,21 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
   const [manualUrl, setManualUrl] = useState<string>("")
   const [deploymentInfo, setDeploymentInfo] = useState<any>(null)
   const [loadingDeployment, setLoadingDeployment] = useState(false)
+  const [manualUrls, setManualUrls] = useState<string[]>([])
 
   const selectedVercel = project.vercelProjects?.find(vp => vp.id === selectedVercelId)
+
+  // Load manual URLs from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem(`vercel-urls-${issue.id}-${selectedVercelId || 'default'}`)
+    if (stored) {
+      try {
+        setManualUrls(JSON.parse(stored))
+      } catch (e) {
+        console.error("[v0] Error parsing stored URLs:", e)
+      }
+    }
+  }, [issue.id, selectedVercelId])
 
   useEffect(() => {
     if (selectedVercel) {
@@ -152,22 +168,22 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
                   </div>
                 )}
 
-                {deploymentInfo.domains && deploymentInfo.domains.length > 0 && (
+                {manualUrls.length > 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Globe className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">Domains</span>
+                      <span className="text-xs font-semibold text-muted-foreground uppercase">Additional URLs</span>
                     </div>
                     <div className="space-y-1">
-                      {deploymentInfo.domains.map((domain: string, idx: number) => (
-                        <div key={idx} className="p-2 bg-muted rounded text-xs font-mono">
+                      {manualUrls.map((url: string, idx: number) => (
+                        <div key={idx} className="p-2 bg-muted rounded text-xs font-mono flex items-center justify-between">
                           <a
-                            href={`https://${domain}`}
+                            href={`https://${url}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary hover:underline break-all"
+                            className="text-primary hover:underline break-all flex-1"
                           >
-                            {domain}
+                            {url}
                           </a>
                         </div>
                       ))}
@@ -175,7 +191,7 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
                   </div>
                 )}
 
-                {!deploymentInfo.latestDeployment && (
+                {!deploymentInfo.latestDeployment && manualUrls.length === 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-muted-foreground uppercase">Deployment</span>
@@ -272,14 +288,14 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
                   </div>
                 )}
 
-                {deploymentInfo.manualUrls && deploymentInfo.manualUrls.length > 0 && (
+                {manualUrls.length > 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Globe className="h-3 w-3 text-muted-foreground" />
                       <span className="text-xs font-semibold text-muted-foreground uppercase">Additional URLs</span>
                     </div>
                     <div className="space-y-1">
-                      {deploymentInfo.manualUrls.map((url: string, idx: number) => (
+                      {manualUrls.map((url: string, idx: number) => (
                         <div key={idx} className="p-2 bg-muted rounded text-xs font-mono flex items-center justify-between">
                           <a
                             href={`https://${url}`}
@@ -295,7 +311,7 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
                   </div>
                 )}
 
-                {!deploymentInfo.latestDeployment && !deploymentInfo.manualUrls?.length && (
+                {!deploymentInfo.latestDeployment && manualUrls.length === 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-muted-foreground uppercase">Deployment</span>
@@ -348,7 +364,56 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
           }
         }} 
       />
+
+      <Dialog open={openManualUrlDialog} onOpenChange={setOpenManualUrlDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Deployment URL</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="manualUrl">Deployment URL</Label>
+              <Input
+                id="manualUrl"
+                value={manualUrl}
+                onChange={(e) => setManualUrl(e.target.value)}
+                placeholder="auth1-3x20plffy-nihugs-projects.vercel.app"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && manualUrl.trim()) {
+                    handleAddManualUrl()
+                  }
+                }}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Enter the full deployment URL (without https://)
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => {
+                setOpenManualUrlDialog(false)
+                setManualUrl("")
+              }}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddManualUrl} disabled={!manualUrl.trim()}>
+                Add
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
+
+  function handleAddManualUrl() {
+    if (manualUrl.trim()) {
+      const newUrls = [...manualUrls, manualUrl.trim()]
+      setManualUrls(newUrls)
+      // Save to localStorage
+      localStorage.setItem(`vercel-urls-${issue.id}-${selectedVercelId || 'default'}`, JSON.stringify(newUrls))
+      setOpenManualUrlDialog(false)
+      setManualUrl("")
+    }
+  }
 }
 
