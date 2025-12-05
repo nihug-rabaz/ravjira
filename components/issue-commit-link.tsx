@@ -98,26 +98,27 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
   return (
     <Card className="p-4 sm:p-6">
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h3 className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2">
             <Github className="h-4 w-4" />
             GitHub Commit
           </h3>
-          {hasGitHubRepo && project.githubRepos && project.githubRepos.length > 1 && (
-            <Select value={selectedRepoId} onValueChange={handleRepoChange}>
-              <SelectTrigger className="w-[200px] h-8">
-                <SelectValue placeholder="Select Repository" />
-              </SelectTrigger>
-              <SelectContent>
-                {project.githubRepos.map((repo) => (
-                  <SelectItem key={repo.id} value={repo.id}>
-                    {repo.githubOwner}/{repo.githubRepo}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          {!issue.commitId && hasGitHubRepo && (
+          <div className="flex items-center gap-2">
+            {hasGitHubRepo && project.githubRepos && (
+              <Select value={selectedRepoId} onValueChange={handleRepoChange}>
+                <SelectTrigger className="w-[200px] h-8">
+                  <SelectValue placeholder="Select Repository" />
+                </SelectTrigger>
+                <SelectContent>
+                  {project.githubRepos.map((repo) => (
+                    <SelectItem key={repo.id} value={repo.id}>
+                      {repo.githubOwner}/{repo.githubRepo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            {!issue.commitId && hasGitHubRepo && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -185,12 +186,42 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
                 </div>
               </DialogContent>
             </Dialog>
-          )}
+            )}
+          </div>
         </div>
 
+        {hasGitHubRepo && selectedRepo && (
+          <div className="p-2 bg-muted rounded text-xs text-muted-foreground flex items-center gap-2">
+            <Github className="h-3 w-3" />
+            <span>Linked to: {selectedRepo.githubOwner}/{selectedRepo.githubRepo}</span>
+            {selectedRepo.githubRepoUrl && (
+              <a
+                href={selectedRepo.githubRepoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline flex items-center gap-1"
+              >
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+          </div>
+        )}
+
         {!hasGitHubRepo && !issue.commitId && (
-          <div className="p-3 bg-muted rounded text-sm text-muted-foreground">
-            Connect a GitHub repository to the project to link commits to issues.
+          <div className="p-3 bg-muted rounded text-sm">
+            <p className="text-muted-foreground mb-2">
+              Connect a GitHub repository to the project to link commits to issues.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                window.location.href = `/project/${project.id}?tab=settings&section=github`
+              }}
+            >
+              <Github className="h-4 w-4 mr-2" />
+              Connect GitHub Repository
+            </Button>
           </div>
         )}
 
