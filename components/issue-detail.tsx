@@ -22,6 +22,7 @@ import { IssueLinks } from "@/components/issue-links"
 import { IssueWatchers } from "@/components/issue-watchers"
 import { IssueVoting } from "@/components/issue-voting"
 import { IssueCommitLink } from "@/components/issue-commit-link"
+import { IssueVercelLink } from "@/components/issue-vercel-link"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface IssueDetailProps {
@@ -401,6 +402,9 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
 
             {/* GitHub Commit */}
             <IssueCommitLink issue={issue} project={project} />
+
+            {/* Vercel Deployment */}
+            <IssueVercelLink issue={issue} project={project} />
 
             {/* Attachments */}
             <Card className="p-4 sm:p-6">

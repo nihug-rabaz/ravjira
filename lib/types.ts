@@ -22,6 +22,7 @@ export interface Issue {
   projectId: string
   epicId?: string
   githubRepoId?: string
+  vercelProjectId?: string
   commitId?: string
   commitMessage?: string
   commitUrl?: string
