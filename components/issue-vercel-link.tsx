@@ -5,8 +5,9 @@ import type { Issue, Project } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Zap, ExternalLink } from "lucide-react"
+import { Zap, ExternalLink, Plus } from "lucide-react"
 import { useLanguage } from "@/hooks/use-language"
+import { VercelIntegrationDialog } from "@/components/vercel-integration-dialog"
 
 interface IssueVercelLinkProps {
   issue: Issue
@@ -16,6 +17,7 @@ interface IssueVercelLinkProps {
 export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
   const { t } = useLanguage()
   const [selectedVercelId, setSelectedVercelId] = useState<string>(issue.vercelProjectId || "")
+  const [openVercelDialog, setOpenVercelDialog] = useState(false)
 
   const selectedVercel = project.vercelProjects?.find(vp => vp.id === selectedVercelId)
 
@@ -68,6 +70,14 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
             <p className="text-muted-foreground mb-2">
               Connect a Vercel project to see deployment links.
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setOpenVercelDialog(true)}
+            >
+              <Zap className="h-4 w-4 mr-2" />
+              Connect Vercel Project
+            </Button>
           </div>
         )}
 
@@ -139,6 +149,18 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
           </div>
         )}
       </div>
+
+      <VercelIntegrationDialog 
+        project={project} 
+        open={openVercelDialog} 
+        onOpenChange={(open) => {
+          setOpenVercelDialog(open)
+          if (!open) {
+            // Reload page to get updated project with new Vercel projects
+            window.location.reload()
+          }
+        }} 
+      />
     </Card>
   )
 }
