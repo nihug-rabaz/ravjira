@@ -82,6 +82,48 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
   const handleUpdate = async (updates: Partial<Issue>) => {
     try {
       if (updates.status && updates.status !== issue.status && project.githubRepos && project.githubRepos.length > 0) {
+        // Try to automatically link the latest commit
+        const selectedRepo = issue.githubRepoId 
+          ? project.githubRepos.find(r => r.id === issue.githubRepoId)
+          : project.githubRepos[0]
+
+        if (selectedRepo) {
+          try {
+            const commitRes = await fetch(
+              `/api/github/repos/${selectedRepo.githubOwner}/${selectedRepo.githubRepo}/commits/latest`
+            )
+            
+            if (commitRes.ok) {
+              const commitInfo = await commitRes.json()
+              const updateData: any = {
+                ...updates,
+                githubRepoId: selectedRepo.id,
+                commitId: commitInfo.id,
+                commitMessage: commitInfo.message,
+                commitUrl: commitInfo.url,
+                commitAuthor: commitInfo.author,
+                commitDate: commitInfo.date,
+              }
+
+              const res = await fetch(`/api/issues/${issue.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updateData),
+              })
+
+              if (res.ok) {
+                const updated = await res.json()
+                setIssue(updated)
+                return
+              }
+            }
+          } catch (error) {
+            console.error("[v0] Error fetching latest commit:", error)
+            // Fall through to show dialog if commit fetch fails
+          }
+        }
+
+        // If auto-linking failed, show dialog
         setPendingStatus(updates.status)
         setShowCommitDialog(true)
         return
