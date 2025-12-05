@@ -22,6 +22,7 @@ import { IssueLinks } from "@/components/issue-links"
 import { IssueWatchers } from "@/components/issue-watchers"
 import { IssueVoting } from "@/components/issue-voting"
 import { IssueCommitLink } from "@/components/issue-commit-link"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface IssueDetailProps {
   issue: Issue
