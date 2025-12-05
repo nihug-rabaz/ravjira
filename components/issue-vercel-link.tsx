@@ -29,7 +29,8 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
     } else if (project.vercelProjects && project.vercelProjects.length === 1 && !selectedVercelId) {
       fetchDeploymentInfo(project.vercelProjects[0])
     }
-  }, [selectedVercelId, project.vercelProjects])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedVercelId])
 
   const fetchDeploymentInfo = async (vercelProject: typeof selectedVercel) => {
     if (!vercelProject) return
