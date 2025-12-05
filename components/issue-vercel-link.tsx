@@ -37,20 +37,18 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
     }
   }
 
-  if (!project.vercelProjects || project.vercelProjects.length === 0) {
-    return null
-  }
+  const hasVercelProjects = project.vercelProjects && project.vercelProjects.length > 0
 
   return (
     <Card className="p-4 sm:p-6">
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h3 className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2">
             <Zap className="h-4 w-4" />
             Vercel Deployment
           </h3>
-          {project.vercelProjects && project.vercelProjects.length > 1 && (
-            <Select value={selectedVercelId} onValueChange={handleVercelChange}>
+          {hasVercelProjects && project.vercelProjects && (
+            <Select value={selectedVercelId || ""} onValueChange={handleVercelChange}>
               <SelectTrigger className="w-[200px] h-8">
                 <SelectValue placeholder="Select Deployment" />
               </SelectTrigger>
@@ -65,7 +63,15 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
           )}
         </div>
 
-        {selectedVercel ? (
+        {!hasVercelProjects && (
+          <div className="p-3 bg-muted rounded text-sm">
+            <p className="text-muted-foreground mb-2">
+              Connect a Vercel project to see deployment links.
+            </p>
+          </div>
+        )}
+
+        {hasVercelProjects && selectedVercel && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="font-medium text-sm">{selectedVercel.vercelProjectName}</span>
@@ -94,7 +100,9 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
               </div>
             )}
           </div>
-        ) : project.vercelProjects && project.vercelProjects.length === 1 ? (
+        )}
+
+        {hasVercelProjects && !selectedVercel && project.vercelProjects && project.vercelProjects.length === 1 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="font-medium text-sm">{project.vercelProjects[0].vercelProjectName}</span>
@@ -123,7 +131,9 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
               </div>
             )}
           </div>
-        ) : (
+        )}
+
+        {hasVercelProjects && !selectedVercel && project.vercelProjects && project.vercelProjects.length > 1 && (
           <div className="p-3 bg-muted rounded text-sm text-muted-foreground">
             No Vercel deployment linked. Select one from the dropdown above.
           </div>
