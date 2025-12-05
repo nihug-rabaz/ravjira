@@ -329,7 +329,7 @@ export function GitHubIntegrationDialog({ project, open, onOpenChange }: GitHubI
                 </div>
                 <Button
                   onClick={() => handleConnect()}
-                  disabled={loading || !selectedRepo || loadingRepos}
+                  disabled={loading || (!selectedRepo && !manualRepoUrl) || loadingRepos}
                   className="w-full"
                 >
                   <Github className="h-4 w-4 mr-2" />
