@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Github, ExternalLink, Code, Plus, Settings } from "lucide-react"
 import { useLanguage } from "@/hooks/use-language"
+import { GitHubIntegrationDialog } from "@/components/github-integration-dialog"
 
 interface IssueCommitLinkProps {
   issue: Issue
@@ -22,6 +23,7 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
   const [commitInfo, setCommitInfo] = useState<any>(null)
   const [open, setOpen] = useState(false)
   const [openRepoSelect, setOpenRepoSelect] = useState(false)
+  const [openGitHubDialog, setOpenGitHubDialog] = useState(false)
   const [loading, setLoading] = useState(false)
   const [selectedRepoId, setSelectedRepoId] = useState<string>(issue.githubRepoId || project.githubRepos?.[0]?.id || "")
 
@@ -215,15 +217,25 @@ export function IssueCommitLink({ issue, project }: IssueCommitLinkProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                window.location.href = `/project/${project.id}?tab=settings&section=github`
-              }}
+              onClick={() => setOpenGitHubDialog(true)}
             >
               <Github className="h-4 w-4 mr-2" />
               Connect GitHub Repository
             </Button>
           </div>
         )}
+
+        <GitHubIntegrationDialog 
+          project={project} 
+          open={openGitHubDialog} 
+          onOpenChange={(open) => {
+            setOpenGitHubDialog(open)
+            if (!open) {
+              // Reload page to get updated project with new repos
+              window.location.reload()
+            }
+          }} 
+        />
 
         {issue.commitId && (
           <div className="space-y-2">
