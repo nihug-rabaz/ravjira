@@ -20,30 +20,23 @@ export async function PATCH(request: Request) {
 
     const sql = getSqlInstance()
     const allowedFields = ["status", "priority", "type", "assignee_id", "epic_id"]
-    const updateParts: string[] = []
+    let hasUpdates = false
 
     for (const [key, value] of Object.entries(updates)) {
       const dbKey = key === "assigneeId" ? "assignee_id" : key === "epicId" ? "epic_id" : key
       if (allowedFields.includes(dbKey)) {
+        hasUpdates = true
         if (value === null || value === "") {
-          updateParts.push(`${dbKey} = NULL`)
+          await sql`UPDATE issues SET ${sql(dbKey)} = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
         } else {
-          updateParts.push(`${dbKey} = ${typeof value === "string" ? `'${value.replace(/'/g, "''")}'` : value}`)
+          await sql`UPDATE issues SET ${sql(dbKey)} = ${value}, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
         }
       }
     }
 
-    if (updateParts.length === 0) {
+    if (!hasUpdates) {
       return NextResponse.json({ error: "No valid fields to update" }, { status: 400 })
     }
-
-    updateParts.push(`updated_at = CURRENT_TIMESTAMP`)
-
-    await sql`
-      UPDATE issues
-      SET ${sql(updateParts.join(", "))}
-      WHERE id = ANY(${issueIds})
-    `
 
     return NextResponse.json({ success: true, updated: issueIds.length })
   } catch (error) {
