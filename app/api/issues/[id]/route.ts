@@ -72,6 +72,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
                 link: `/issue/${id}`,
               })
             }
+
+            if (key === "status" && updates.commitId) {
+              const commitUpdates: any = {
+                commitId: updates.commitId,
+              }
+              if (updates.commitMessage) commitUpdates.commitMessage = updates.commitMessage
+              if (updates.commitUrl) commitUpdates.commitUrl = updates.commitUrl
+              if (updates.commitAuthor) commitUpdates.commitAuthor = updates.commitAuthor
+              if (updates.commitDate) commitUpdates.commitDate = updates.commitDate
+              
+              await updateIssue(id, commitUpdates)
+            }
           }
         }
       }

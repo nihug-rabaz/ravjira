@@ -1,0 +1,8 @@
+ALTER TABLE issues ADD COLUMN IF NOT EXISTS commit_id TEXT;
+ALTER TABLE issues ADD COLUMN IF NOT EXISTS commit_message TEXT;
+ALTER TABLE issues ADD COLUMN IF NOT EXISTS commit_url TEXT;
+ALTER TABLE issues ADD COLUMN IF NOT EXISTS commit_author TEXT;
+ALTER TABLE issues ADD COLUMN IF NOT EXISTS commit_date TIMESTAMP;
+
+CREATE INDEX IF NOT EXISTS idx_issues_commit_id ON issues(commit_id);
+

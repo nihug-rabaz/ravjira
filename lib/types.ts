@@ -21,6 +21,11 @@ export interface Issue {
   reporter: User
   projectId: string
   epicId?: string
+  commitId?: string
+  commitMessage?: string
+  commitUrl?: string
+  commitAuthor?: string
+  commitDate?: string
   createdAt: string
   updatedAt: string
   comments: Comment[]

@@ -21,6 +21,7 @@ import { TimeTracking } from "@/components/time-tracking"
 import { IssueLinks } from "@/components/issue-links"
 import { IssueWatchers } from "@/components/issue-watchers"
 import { IssueVoting } from "@/components/issue-voting"
+import { IssueCommitLink } from "@/components/issue-commit-link"
 
 interface IssueDetailProps {
   issue: Issue
@@ -42,6 +43,9 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
   const [history, setHistory] = useState<IssueHistory[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [showCommitDialog, setShowCommitDialog] = useState(false)
+  const [pendingStatus, setPendingStatus] = useState<IssueStatus | null>(null)
+  const [commitId, setCommitId] = useState("")
   const router = useRouter()
 
   useEffect(() => {
@@ -76,6 +80,12 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
 
   const handleUpdate = async (updates: Partial<Issue>) => {
     try {
+      if (updates.status && updates.status !== issue.status && project.githubRepos && project.githubRepos.length > 0) {
+        setPendingStatus(updates.status)
+        setShowCommitDialog(true)
+        return
+      }
+
       const res = await fetch(`/api/issues/${issue.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -88,6 +98,54 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
       }
     } catch (error) {
       console.error("[v0] Error updating issue:", error)
+    }
+  }
+
+  const handleCommitLink = async () => {
+    if (!commitId.trim() || !pendingStatus) return
+
+    try {
+      let commitInfo: any = null
+      if (project.githubRepos && project.githubRepos.length > 0) {
+        const repo = project.githubRepos[0]
+        const res = await fetch(
+          `/api/github/commit/${commitId.trim()}?owner=${repo.githubOwner}&repo=${repo.githubRepo}`
+        )
+        if (res.ok) {
+          commitInfo = await res.json()
+        }
+      }
+
+      const updates: any = {
+        status: pendingStatus,
+        commitId: commitId.trim(),
+      }
+
+      if (commitInfo) {
+        updates.commitMessage = commitInfo.message
+        updates.commitUrl = commitInfo.url
+        updates.commitAuthor = commitInfo.author
+        updates.commitDate = commitInfo.date
+      } else if (project.githubRepos && project.githubRepos.length > 0) {
+        const repo = project.githubRepos[0]
+        updates.commitUrl = `https://github.com/${repo.githubOwner}/${repo.githubRepo}/commit/${commitId.trim()}`
+      }
+
+      const res = await fetch(`/api/issues/${issue.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      })
+
+      if (res.ok) {
+        const updated = await res.json()
+        setIssue(updated)
+        setShowCommitDialog(false)
+        setCommitId("")
+        setPendingStatus(null)
+      }
+    } catch (error) {
+      console.error("[v0] Error linking commit:", error)
     }
   }
 
@@ -656,6 +714,45 @@ export function IssueDetail({ issue: initialIssue, project }: IssueDetailProps) 
             </div>
           </Card>
         )}
+
+        {/* Commit Link Dialog */}
+        <Dialog open={showCommitDialog} onOpenChange={setShowCommitDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Link GitHub Commit</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <LabelComponent className="text-sm font-medium mb-2 block">Commit ID</LabelComponent>
+                <Input
+                  value={commitId}
+                  onChange={(e) => setCommitId(e.target.value)}
+                  placeholder="d19e34a"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleCommitLink()
+                    }
+                  }}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Enter the commit ID to link this status change to a GitHub commit
+                </p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => {
+                  setShowCommitDialog(false)
+                  setCommitId("")
+                  setPendingStatus(null)
+                }}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCommitLink} disabled={!commitId.trim()}>
+                  Link & Update Status
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </>
   )

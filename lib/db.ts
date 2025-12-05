@@ -346,6 +346,11 @@ export async function getIssuesByProject(projectId: string): Promise<Issue[]> {
     assigneeId: i.assignee_id,
     reporterId: i.reporter_id,
     epicId: i.epic_id,
+    commitId: i.commit_id,
+    commitMessage: i.commit_message,
+    commitUrl: i.commit_url,
+    commitAuthor: i.commit_author,
+    commitDate: i.commit_date,
     createdAt: i.created_at,
     updatedAt: i.updated_at,
   })) as Issue[]
@@ -373,6 +378,11 @@ export async function getIssue(id: string): Promise<Issue | null> {
     assigneeId: i.assignee_id,
     reporterId: i.reporter_id,
     epicId: i.epic_id,
+    commitId: i.commit_id,
+    commitMessage: i.commit_message,
+    commitUrl: i.commit_url,
+    commitAuthor: i.commit_author,
+    commitDate: i.commit_date,
     createdAt: i.created_at,
     updatedAt: i.updated_at,
   } as Issue
@@ -426,6 +436,21 @@ export async function updateIssue(id: string, updates: Partial<Issue>): Promise<
   }
   if ((updates as any).epicId !== undefined) {
     await sql`UPDATE issues SET epic_id = ${(updates as any).epicId}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+  }
+  if ((updates as any).commitId !== undefined) {
+    await sql`UPDATE issues SET commit_id = ${(updates as any).commitId}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+  }
+  if ((updates as any).commitMessage !== undefined) {
+    await sql`UPDATE issues SET commit_message = ${(updates as any).commitMessage}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+  }
+  if ((updates as any).commitUrl !== undefined) {
+    await sql`UPDATE issues SET commit_url = ${(updates as any).commitUrl}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+  }
+  if ((updates as any).commitAuthor !== undefined) {
+    await sql`UPDATE issues SET commit_author = ${(updates as any).commitAuthor}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
+  }
+  if ((updates as any).commitDate !== undefined) {
+    await sql`UPDATE issues SET commit_date = ${(updates as any).commitDate || null}, updated_at = CURRENT_TIMESTAMP WHERE id = ${id}`
   }
 
   return getIssue(id)
@@ -1232,6 +1257,11 @@ export async function getIssuesBySprint(sprintId: string): Promise<Issue[]> {
     assigneeId: i.assignee_id,
     reporterId: i.reporter_id,
     epicId: i.epic_id,
+    commitId: i.commit_id,
+    commitMessage: i.commit_message,
+    commitUrl: i.commit_url,
+    commitAuthor: i.commit_author,
+    commitDate: i.commit_date,
     createdAt: i.created_at,
     updatedAt: i.updated_at,
   })) as Issue[]
