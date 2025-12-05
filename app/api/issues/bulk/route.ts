@@ -27,9 +27,29 @@ export async function PATCH(request: Request) {
       if (allowedFields.includes(dbKey)) {
         hasUpdates = true
         if (value === null || value === "") {
-          await sql`UPDATE issues SET ${sql(dbKey)} = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
+          if (dbKey === "status") {
+            await sql`UPDATE issues SET status = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
+          } else if (dbKey === "priority") {
+            await sql`UPDATE issues SET priority = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
+          } else if (dbKey === "type") {
+            await sql`UPDATE issues SET type = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
+          } else if (dbKey === "assignee_id") {
+            await sql`UPDATE issues SET assignee_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
+          } else if (dbKey === "epic_id") {
+            await sql`UPDATE issues SET epic_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
+          }
         } else {
-          await sql`UPDATE issues SET ${sql(dbKey)} = ${value}, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
+          if (dbKey === "status") {
+            await sql`UPDATE issues SET status = ${value}, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
+          } else if (dbKey === "priority") {
+            await sql`UPDATE issues SET priority = ${value}, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
+          } else if (dbKey === "type") {
+            await sql`UPDATE issues SET type = ${value}, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
+          } else if (dbKey === "assignee_id") {
+            await sql`UPDATE issues SET assignee_id = ${value}, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
+          } else if (dbKey === "epic_id") {
+            await sql`UPDATE issues SET epic_id = ${value}, updated_at = CURRENT_TIMESTAMP WHERE id = ANY(${issueIds})`
+          }
         }
       }
     }
