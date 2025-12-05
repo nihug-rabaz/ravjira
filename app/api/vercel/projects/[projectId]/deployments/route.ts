@@ -45,27 +45,31 @@ export async function GET(
       deployments = deploymentsData.deployments || []
     }
 
-    // Get domains for the project - use v9 projects endpoint which includes domains
+    // Get domains for the project - filter by projectId
+    const domainsUrl = teamId
+      ? `https://api.vercel.com/v5/domains?projectId=${projectId}&teamId=${teamId}`
+      : `https://api.vercel.com/v5/domains?projectId=${projectId}`
+
+    const domainsRes = await fetch(domainsUrl, { headers })
+    
     let domains: string[] = []
-    if (project.domains && Array.isArray(project.domains)) {
-      domains = project.domains
-    } else if (project.link?.domain) {
-      domains = [project.link.domain]
+    if (domainsRes.ok) {
+      const domainsData = await domainsRes.json()
+      // Filter domains that belong to this specific project
+      if (domainsData.domains && Array.isArray(domainsData.domains)) {
+        domains = domainsData.domains
+          .filter((d: any) => {
+            // Only include domains that are linked to this project
+            return d.projectId === projectId || d.projectId === project.id
+          })
+          .map((d: any) => typeof d === 'string' ? d : (d.name || d.domain))
+          .filter(Boolean)
+      }
     }
     
-    // Also try to get domains from the project configuration
-    if (domains.length === 0) {
-      const projectConfigUrl = teamId
-        ? `https://api.vercel.com/v9/projects/${projectId}/domains?teamId=${teamId}`
-        : `https://api.vercel.com/v9/projects/${projectId}/domains`
-      
-      const domainsRes = await fetch(projectConfigUrl, { headers })
-      if (domainsRes.ok) {
-        const domainsData = await domainsRes.json()
-        if (domainsData.domains && Array.isArray(domainsData.domains)) {
-          domains = domainsData.domains.map((d: any) => typeof d === 'string' ? d : d.name || d.domain).filter(Boolean)
-        }
-      }
+    // Also check project configuration for domains
+    if (project.domains && Array.isArray(project.domains)) {
+      domains = [...new Set([...domains, ...project.domains])]
     }
 
     // Format deployments with their URLs
