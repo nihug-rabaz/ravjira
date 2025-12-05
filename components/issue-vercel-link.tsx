@@ -120,21 +120,25 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
               <div className="text-xs text-muted-foreground">Loading deployment info...</div>
             ) : deploymentInfo ? (
               <>
-                {deploymentInfo.latestDeployment && (
+                {deploymentInfo.deployments && deploymentInfo.deployments.length > 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Globe className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">Deployment</span>
+                      <span className="text-xs font-semibold text-muted-foreground uppercase">Deployments</span>
                     </div>
-                    <div className="p-2 bg-muted rounded text-xs font-mono">
-                      <a
-                        href={`https://${deploymentInfo.latestDeployment.url}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline break-all"
-                      >
-                        {deploymentInfo.latestDeployment.url}
-                      </a>
+                    <div className="space-y-1 max-h-60 overflow-y-auto">
+                      {deploymentInfo.deployments.map((deployment: any, idx: number) => (
+                        <div key={deployment.id || idx} className="p-2 bg-muted rounded text-xs font-mono">
+                          <a
+                            href={`https://${deployment.url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline break-all"
+                          >
+                            {deployment.url}
+                          </a>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -162,30 +166,7 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
                   </div>
                 )}
 
-                {deploymentInfo.previewUrls && deploymentInfo.previewUrls.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">Preview URLs</span>
-                    </div>
-                    <div className="space-y-1">
-                      {deploymentInfo.previewUrls.map((url: string, idx: number) => (
-                        <div key={idx} className="p-2 bg-muted rounded text-xs font-mono">
-                          <a
-                            href={`https://${url}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline break-all"
-                          >
-                            {url}
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {!deploymentInfo.latestDeployment && !deploymentInfo.domains?.length && (
+                {(!deploymentInfo.deployments || deploymentInfo.deployments.length === 0) && (!deploymentInfo.domains || deploymentInfo.domains.length === 0) && (
                   <div className="p-2 bg-muted rounded text-xs text-muted-foreground">
                     No deployment information available
                   </div>
@@ -215,21 +196,25 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
               <div className="text-xs text-muted-foreground">Loading deployment info...</div>
             ) : deploymentInfo ? (
               <>
-                {deploymentInfo.latestDeployment && (
+                {deploymentInfo.deployments && deploymentInfo.deployments.length > 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Globe className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">Deployment</span>
+                      <span className="text-xs font-semibold text-muted-foreground uppercase">Deployments</span>
                     </div>
-                    <div className="p-2 bg-muted rounded text-xs font-mono">
-                      <a
-                        href={`https://${deploymentInfo.latestDeployment.url}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline break-all"
-                      >
-                        {deploymentInfo.latestDeployment.url}
-                      </a>
+                    <div className="space-y-1 max-h-60 overflow-y-auto">
+                      {deploymentInfo.deployments.map((deployment: any, idx: number) => (
+                        <div key={deployment.id || idx} className="p-2 bg-muted rounded text-xs font-mono">
+                          <a
+                            href={`https://${deployment.url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline break-all"
+                          >
+                            {deployment.url}
+                          </a>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -257,26 +242,9 @@ export function IssueVercelLink({ issue, project }: IssueVercelLinkProps) {
                   </div>
                 )}
 
-                {deploymentInfo.previewUrls && deploymentInfo.previewUrls.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase">Preview URLs</span>
-                    </div>
-                    <div className="space-y-1">
-                      {deploymentInfo.previewUrls.map((url: string, idx: number) => (
-                        <div key={idx} className="p-2 bg-muted rounded text-xs font-mono">
-                          <a
-                            href={`https://${url}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline break-all"
-                          >
-                            {url}
-                          </a>
-                        </div>
-                      ))}
-                    </div>
+                {(!deploymentInfo.deployments || deploymentInfo.deployments.length === 0) && (!deploymentInfo.domains || deploymentInfo.domains.length === 0) && (
+                  <div className="p-2 bg-muted rounded text-xs text-muted-foreground">
+                    No deployment information available
                   </div>
                 )}
               </>

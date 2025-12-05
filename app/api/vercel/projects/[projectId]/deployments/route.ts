@@ -32,10 +32,10 @@ export async function GET(
 
     const project = await projectRes.json()
 
-    // Get latest deployments
+    // Get all deployments
     const deploymentsUrl = teamId
-      ? `https://api.vercel.com/v6/deployments?projectId=${projectId}&teamId=${teamId}&limit=1`
-      : `https://api.vercel.com/v6/deployments?projectId=${projectId}&limit=1`
+      ? `https://api.vercel.com/v6/deployments?projectId=${projectId}&teamId=${teamId}&limit=20`
+      : `https://api.vercel.com/v6/deployments?projectId=${projectId}&limit=20`
 
     const deploymentsRes = await fetch(deploymentsUrl, { headers })
     
@@ -45,7 +45,7 @@ export async function GET(
       deployments = deploymentsData.deployments || []
     }
 
-    // Get domains
+    // Get domains for the project
     const domainsUrl = teamId
       ? `https://api.vercel.com/v5/domains?projectId=${projectId}&teamId=${teamId}`
       : `https://api.vercel.com/v5/domains?projectId=${projectId}`
@@ -58,7 +58,14 @@ export async function GET(
       domains = domainsData.domains?.map((d: any) => d.name) || []
     }
 
-    const latestDeployment = deployments[0]
+    // Format deployments with their URLs
+    const formattedDeployments = deployments.map((deployment: any) => ({
+      id: deployment.uid,
+      url: deployment.url,
+      state: deployment.state,
+      createdAt: deployment.createdAt,
+      alias: deployment.alias || [],
+    }))
 
     return NextResponse.json({
       project: {
@@ -66,15 +73,8 @@ export async function GET(
         name: project.name,
         url: project.link?.url || `https://${project.name}.vercel.app`,
       },
-      latestDeployment: latestDeployment ? {
-        id: latestDeployment.uid,
-        url: latestDeployment.url,
-        alias: latestDeployment.alias || [],
-        createdAt: latestDeployment.createdAt,
-        state: latestDeployment.state,
-      } : null,
+      deployments: formattedDeployments,
       domains: domains,
-      previewUrls: latestDeployment?.alias?.filter((a: string) => a.includes('.vercel.app') && !a.includes(project.name)) || [],
     })
   } catch (error) {
     console.error("[v0] Error fetching Vercel deployments:", error)
