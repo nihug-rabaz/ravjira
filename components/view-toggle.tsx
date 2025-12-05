@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { LayoutGrid, List, BarChart3, Calendar, GitBranch, Clock } from "lucide-react"
+import { useLanguage } from "@/hooks/use-language"
 
 interface ViewToggleProps {
   view: "kanban" | "list" | "timeline" | "calendar" | "reports" | "sprints"
@@ -9,6 +10,7 @@ interface ViewToggleProps {
 }
 
 export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
+  const { t } = useLanguage()
   return (
     <div className="flex items-center gap-1 border rounded-md p-1 flex-wrap">
       <Button
@@ -18,7 +20,7 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
         className="h-8 text-xs sm:text-sm"
       >
         <LayoutGrid className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-        <span className="hidden sm:inline">Board</span>
+        <span className="hidden sm:inline">{t("view.board")}</span>
       </Button>
       <Button
         variant={view === "list" ? "default" : "ghost"}
@@ -27,7 +29,7 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
         className="h-8 text-xs sm:text-sm"
       >
         <List className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-        <span className="hidden sm:inline">List</span>
+        <span className="hidden sm:inline">{t("view.list")}</span>
       </Button>
       <Button
         variant={view === "timeline" ? "default" : "ghost"}
@@ -36,7 +38,7 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
         className="h-8 text-xs sm:text-sm"
       >
         <Clock className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-        <span className="hidden sm:inline">Timeline</span>
+        <span className="hidden sm:inline">{t("view.timeline")}</span>
       </Button>
       <Button
         variant={view === "calendar" ? "default" : "ghost"}
@@ -45,7 +47,7 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
         className="h-8 text-xs sm:text-sm"
       >
         <Calendar className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-        <span className="hidden sm:inline">Calendar</span>
+        <span className="hidden sm:inline">{t("view.calendar")}</span>
       </Button>
       <Button
         variant={view === "sprints" ? "default" : "ghost"}
@@ -54,7 +56,7 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
         className="h-8 text-xs sm:text-sm"
       >
         <GitBranch className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-        <span className="hidden sm:inline">Sprints</span>
+        <span className="hidden sm:inline">{t("view.sprints")}</span>
       </Button>
       <Button
         variant={view === "reports" ? "default" : "ghost"}
@@ -63,7 +65,7 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
         className="h-8 text-xs sm:text-sm"
       >
         <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-        <span className="hidden sm:inline">Reports</span>
+        <span className="hidden sm:inline">{t("view.reports")}</span>
       </Button>
     </div>
   )
